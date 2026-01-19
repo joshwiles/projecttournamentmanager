@@ -141,4 +141,3 @@ onMounted(() => {
   loadTournaments();
 });
 </script>
-
