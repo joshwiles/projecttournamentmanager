@@ -27,7 +27,6 @@
           @change="updateRoundsBasedOnType"
           class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
-          <option value="swiss">Swiss System</option>
           <option value="swiss_uscf">Swiss (USCF)</option>
           <option value="swiss_fide_dutch">Swiss (FIDE Dutch)</option>
           <option value="swiss_accelerated">Swiss (Accelerated)</option>
@@ -83,7 +82,7 @@ import { ref, computed } from 'vue';
 const emit = defineEmits(['tournament-created']);
 
 const tournamentName = ref('');
-const tournamentType = ref('swiss');
+const tournamentType = ref('swiss_fide_dutch');
 const numberOfRounds = ref(5);
 const loading = ref(false);
 const error = ref('');
@@ -126,7 +125,7 @@ const createTournament = async () => {
 
     emit('tournament-created', data.tournament);
     tournamentName.value = '';
-    tournamentType.value = 'swiss';
+    tournamentType.value = 'swiss_fide_dutch';
     numberOfRounds.value = 5;
   } catch (err) {
     error.value = err.message;
