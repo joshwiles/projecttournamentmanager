@@ -101,6 +101,7 @@ import PlayerManager from './PlayerManager.vue';
 import RoundPairings from './RoundPairings.vue';
 import Standings from './Standings.vue';
 import GameResults from './GameResults.vue';
+import { API_BASE } from '../config/api.js';
 
 const props = defineProps({
   tournamentId: {
@@ -115,8 +116,6 @@ const tournament = ref(null);
 const standings = ref([]);
 const loading = ref(true);
 const error = ref('');
-
-const API_BASE = '/api';
 
 const statusLabel = computed(() => {
   if (!tournament.value) return '';

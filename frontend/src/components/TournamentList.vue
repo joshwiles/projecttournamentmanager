@@ -74,6 +74,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import TournamentCreator from './TournamentCreator.vue';
+import { API_BASE } from '../config/api.js';
 
 const emit = defineEmits(['tournament-selected']);
 
@@ -81,8 +82,6 @@ const tournaments = ref([]);
 const loading = ref(true);
 const error = ref('');
 const showCreator = ref(false);
-
-const API_BASE = '/api';
 
 const getStatusLabel = (status) => {
   if (status === 'registration') return 'Registration';
