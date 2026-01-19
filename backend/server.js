@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Welcome to your Express.js API',
+    message: 'Welcome to Swiss Tournament API',
     version: '1.0.0',
     status: 'running'
   });
@@ -28,16 +28,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Example API endpoint
-app.get('/api/example', (req, res) => {
-  res.json({
-    message: 'This is an example API endpoint',
-    data: {
-      items: ['item1', 'item2', 'item3'],
-      count: 3
-    }
-  });
-});
+// API Routes
+app.use('/api/tournaments', require('./routes/tournaments'));
+app.use('/api/auth', require('./routes/auth'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
