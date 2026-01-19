@@ -32,7 +32,7 @@ const handleNavigateToDashboard = () => {
 };
 
 const showCreator = ref(false);
-const selectedTournamentType = ref('swiss');
+const selectedTournamentType = ref('swiss_uscf');
 
 const handleStartTournament = (tournamentType) => {
   selectedTournamentType.value = tournamentType;

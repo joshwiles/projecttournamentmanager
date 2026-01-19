@@ -25,7 +25,6 @@
               v-model="tournamentType"
               class="w-full px-5 py-4 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 appearance-none cursor-pointer hover:bg-gray-700/70"
             >
-              <option value="swiss" class="bg-gray-800">Swiss System</option>
               <option value="swiss_uscf" class="bg-gray-800">Swiss (USCF)</option>
               <option value="swiss_fide_dutch" class="bg-gray-800">Swiss (FIDE Dutch)</option>
               <option value="swiss_accelerated" class="bg-gray-800">Swiss (Accelerated)</option>
@@ -71,7 +70,7 @@ import { ref } from 'vue';
 
 const emit = defineEmits(['start-tournament']);
 
-const tournamentType = ref('swiss');
+const tournamentType = ref('swiss_uscf');
 
 const handleStartTournament = () => {
   emit('start-tournament', tournamentType.value);
