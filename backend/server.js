@@ -8,9 +8,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(helmet());
-app.use(cors());
-app.use(morgan('combined'));
+app.use(helmet({
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? false : undefined
+}));
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? true : 'http://localhost:5173'),
+  credentials: true
+}));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -32,6 +37,29 @@ app.get('/health', (req, res) => {
 app.use('/api/tournaments', require('./routes/tournaments'));
 app.use('/api/auth', require('./routes/auth'));
 
+// Serve static files from frontend/dist in production
+if (process.env.NODE_ENV === 'production') {
+  const path = require('path');
+  const frontendDist = path.join(__dirname, '../frontend/dist');
+  
+  // Serve static files
+  app.use(express.static(frontendDist));
+  
+  // Handle React/Vue Router - return index.html for all non-API routes
+  app.get('*', (req, res) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({ error: 'Route not found' });
+    }
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+} else {
+  // 404 handler for development
+  app.use('*', (req, res) => {
+    res.status(404).json({ error: 'Route not found' });
+  });
+}
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -39,11 +67,6 @@ app.use((err, req, res, next) => {
     error: 'Something went wrong!',
     message: err.message 
   });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
 });
 
 // Start server
