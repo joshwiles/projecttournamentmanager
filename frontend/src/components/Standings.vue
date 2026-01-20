@@ -1,21 +1,102 @@
 <template>
-  <div class="standings bg-white rounded-lg shadow-md p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold">Standings</h2>
+  <div class="standings bg-white rounded-lg shadow-md p-4 md:p-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+      <h2 class="text-xl md:text-2xl font-bold">Standings</h2>
       <button
         v-if="tournament && (tournament.status === 'in_progress' || tournament.status === 'completed')"
         @click="showGameHistory = !showGameHistory"
-        class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+        class="w-full sm:w-auto text-sm text-blue-600 active:text-blue-800 hover:text-blue-800 font-medium px-4 py-2 rounded-md active:bg-blue-50 min-h-[44px]"
       >
         {{ showGameHistory ? 'Hide' : 'Show' }} Game History
       </button>
     </div>
 
-    <div v-if="standings.length === 0" class="text-gray-500 text-center py-8">
+    <div v-if="standings.length === 0" class="text-gray-500 text-center py-8 text-base">
       No standings available yet
     </div>
 
-    <div v-else class="overflow-x-auto">
+    <!-- Mobile Card Layout -->
+    <div v-else class="block md:hidden space-y-3">
+      <div
+        v-for="player in standings"
+        :key="player.id"
+        class="bg-gray-50 rounded-lg p-4 border-2"
+        :class="{
+          'border-yellow-400 bg-yellow-50': player.rank === 1,
+          'border-gray-300 bg-gray-50': player.rank === 2,
+          'border-orange-300 bg-orange-50': player.rank === 3,
+          'border-gray-200': player.rank > 3,
+        }"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-3">
+            <span
+              class="inline-flex items-center justify-center w-10 h-10 rounded-full font-bold text-base"
+              :class="{
+                'bg-yellow-400 text-yellow-900': player.rank === 1,
+                'bg-gray-300 text-gray-900': player.rank === 2,
+                'bg-orange-300 text-orange-900': player.rank === 3,
+                'bg-gray-200 text-gray-700': player.rank > 3,
+              }"
+            >
+              {{ player.rank }}
+            </span>
+            <div>
+              <div class="font-bold text-base text-gray-900">{{ player.name }}</div>
+              <div class="text-sm text-gray-600">
+                <span v-if="player.rating">{{ player.rating }}</span>
+                <span v-else class="text-gray-400 italic">unrated</span>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-xl text-gray-900">{{ player.score }}</div>
+            <div class="text-xs text-gray-500">points</div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-4 gap-2 text-center pt-3 border-t border-gray-200">
+          <div>
+            <div class="text-xs text-gray-500 mb-1">W</div>
+            <div class="font-semibold text-base">{{ player.wins }}</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">D</div>
+            <div class="font-semibold text-base">{{ player.draws }}</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">L</div>
+            <div class="font-semibold text-base">{{ player.losses }}</div>
+          </div>
+          <div>
+            <div class="text-xs text-gray-500 mb-1">Games</div>
+            <div class="font-semibold text-base">{{ player.gamesPlayed }}</div>
+          </div>
+        </div>
+
+        <!-- Game History (Mobile) -->
+        <div
+          v-if="showGameHistory && tournament && getPlayerGames(player.id).length > 0"
+          class="mt-3 pt-3 border-t border-gray-200"
+        >
+          <div class="text-xs font-semibold mb-2 text-gray-700">Game History:</div>
+          <div class="flex flex-wrap gap-2">
+            <span
+              v-for="(game, index) in getPlayerGames(player.id)"
+              :key="index"
+              class="px-2 py-1 rounded text-xs"
+              :class="getGameResultClass(game, player.id)"
+            >
+              R{{ game.round }}: {{ getGameOpponent(game, player.id) }}
+              <span class="font-semibold">{{ getGameResult(game, player.id) }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Table Layout -->
+    <div v-else class="hidden md:block overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
@@ -92,7 +173,7 @@
               {{ player.gamesPlayed }}
             </td>
           </tr>
-          <!-- Game History Row -->
+          <!-- Game History Row (Desktop) -->
           <tr
             v-if="showGameHistory && tournament && getPlayerGames(player.id).length > 0"
             :key="`history-${player.id}`"

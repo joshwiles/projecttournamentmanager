@@ -1,11 +1,11 @@
 <template>
   <div class="tournament-list">
-    <div class="flex justify-between items-center mb-6">
-      <h1 class="text-3xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 md:mb-6">
+      <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
       </h1>
       <button
         @click="showCreator = true"
-        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+        class="w-full sm:w-auto bg-blue-600 text-white px-4 py-3 md:py-2 rounded-md active:bg-blue-700 hover:bg-blue-700 transition-colors font-semibold min-h-[44px]"
       >
         + New Tournament
       </button>
@@ -29,15 +29,15 @@
       <p class="text-gray-500 mb-4">No tournaments yet. Create your first tournament to get started!</p>
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <div
         v-for="tournament in tournaments"
         :key="tournament.id"
         @click="selectTournament(tournament.id)"
-        class="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+        class="bg-white rounded-lg shadow-md p-4 md:p-6 cursor-pointer active:shadow-lg hover:shadow-lg transition-shadow touch-manipulation"
       >
-        <h3 class="text-xl font-bold mb-2">{{ tournament.name }}</h3>
-        <div class="text-sm text-gray-600 space-y-1">
+        <h3 class="text-lg md:text-xl font-bold mb-2">{{ tournament.name }}</h3>
+        <div class="text-sm md:text-base text-gray-600 space-y-1.5">
           <p>Rounds: {{ tournament.currentRound }} / {{ tournament.numberOfRounds }}</p>
           <p>Players: {{ tournament.playerCount }}</p>
           <p class="flex gap-2 flex-wrap">

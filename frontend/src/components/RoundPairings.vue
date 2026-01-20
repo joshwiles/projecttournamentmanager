@@ -1,11 +1,11 @@
 <template>
-  <div class="round-pairings bg-white rounded-lg shadow-md p-6">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold">Round {{ round?.roundNumber || currentRound }}</h2>
-      <div v-if="round && !round.completed" class="text-sm text-gray-600">
+  <div class="round-pairings bg-white rounded-lg shadow-md p-4 md:p-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4">
+      <h2 class="text-xl md:text-2xl font-bold">Round {{ round?.roundNumber || currentRound }}</h2>
+      <div v-if="round && !round.completed" class="text-sm md:text-base text-gray-600">
         {{ completedPairings }}/{{ totalPairings }} results entered
       </div>
-      <div v-else-if="round?.completed" class="text-sm text-green-600 font-medium">
+      <div v-else-if="round?.completed" class="text-sm md:text-base text-green-600 font-medium">
         Round Completed
       </div>
     </div>
@@ -18,41 +18,41 @@
       <div
         v-for="(pairing, index) in round.pairings"
         :key="index"
-        class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+        class="border border-gray-200 rounded-lg p-4 active:bg-gray-50 hover:bg-gray-50 transition-colors"
       >
-        <div class="flex items-center justify-between">
-          <div class="flex-1">
-            <div class="text-sm text-gray-600 mb-2">Board {{ pairing.boardNumber }}</div>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="text-sm md:text-base text-gray-600 mb-3 font-medium">Board {{ pairing.boardNumber }}</div>
             
             <div v-if="pairing.isBye" class="space-y-2">
               <div class="flex items-center gap-2">
-                <span class="font-medium">{{ pairing.player1.name }}</span>
-                <span class="text-green-600 font-semibold">BYE (1 point)</span>
+                <span class="font-medium text-base">{{ pairing.player1.name }}</span>
+                <span class="text-green-600 font-semibold text-sm md:text-base">BYE (1 point)</span>
               </div>
             </div>
 
-            <div v-else class="space-y-2">
-              <div class="flex items-center gap-3">
+            <div v-else class="space-y-3">
+              <div class="flex items-center gap-2 md:gap-3 flex-wrap">
                 <span
-                  class="w-2 h-2 rounded-full"
+                  class="w-3 h-3 md:w-2 md:h-2 rounded-full flex-shrink-0"
                   :class="pairing.whitePlayerId === pairing.player1.id ? 'bg-white border-2 border-gray-400' : 'bg-black'"
                 ></span>
-                <span class="font-medium">{{ pairing.player1.name }}</span>
-                <span v-if="pairing.player1.rating" class="text-xs text-gray-500">
+                <span class="font-medium text-base md:text-lg break-words">{{ pairing.player1.name }}</span>
+                <span v-if="pairing.player1.rating" class="text-xs md:text-sm text-gray-500">
                   ({{ pairing.player1.rating }})
                 </span>
                 <span class="text-xs bg-gray-100 px-2 py-1 rounded">
                   {{ pairing.whitePlayerId === pairing.player1.id ? 'White' : 'Black' }}
                 </span>
               </div>
-              <div class="text-center text-gray-400">vs</div>
-              <div class="flex items-center gap-3">
+              <div class="text-center text-gray-400 text-sm md:text-base">vs</div>
+              <div class="flex items-center gap-2 md:gap-3 flex-wrap">
                 <span
-                  class="w-2 h-2 rounded-full"
+                  class="w-3 h-3 md:w-2 md:h-2 rounded-full flex-shrink-0"
                   :class="pairing.whitePlayerId === pairing.player2.id ? 'bg-white border-2 border-gray-400' : 'bg-black'"
                 ></span>
-                <span class="font-medium">{{ pairing.player2.name }}</span>
-                <span v-if="pairing.player2.rating" class="text-xs text-gray-500">
+                <span class="font-medium text-base md:text-lg break-words">{{ pairing.player2.name }}</span>
+                <span v-if="pairing.player2.rating" class="text-xs md:text-sm text-gray-500">
                   ({{ pairing.player2.rating }})
                 </span>
                 <span class="text-xs bg-gray-100 px-2 py-1 rounded">
@@ -62,11 +62,11 @@
             </div>
           </div>
 
-          <div v-if="!pairing.isBye && !round.completed" class="ml-4">
+          <div v-if="!pairing.isBye && !round.completed" class="sm:ml-4 w-full sm:w-auto">
             <select
               v-model="pairing.result"
               @change="updateResult(pairing, index)"
-              class="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              class="w-full sm:w-auto px-4 py-3 md:py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base min-h-[44px] bg-white"
             >
               <option value="">Select result</option>
               <option value="1-0">White wins (1-0)</option>
@@ -75,8 +75,8 @@
             </select>
           </div>
 
-          <div v-else-if="!pairing.isBye && round.completed" class="ml-4">
-            <span class="px-3 py-2 bg-gray-100 rounded-md font-medium">
+          <div v-else-if="!pairing.isBye && round.completed" class="sm:ml-4 w-full sm:w-auto">
+            <span class="inline-block w-full sm:w-auto px-4 py-3 md:py-2 bg-gray-100 rounded-md font-medium text-center text-base">
               {{ formatResult(pairing.result) }}
             </span>
           </div>
@@ -87,7 +87,7 @@
         <button
           @click="completeRound"
           :disabled="loading"
-          class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          class="w-full bg-green-600 text-white py-3 md:py-2 px-4 rounded-md active:bg-green-700 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold min-h-[44px] text-base"
         >
           {{ loading ? 'Completing...' : 'Complete Round' }}
         </button>
