@@ -78,6 +78,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { API_BASE } from '../config/api.js';
 
 const emit = defineEmits(['tournament-created']);
 
@@ -97,8 +98,6 @@ const updateRoundsBasedOnType = () => {
     numberOfRounds.value = 5;
   }
 };
-
-const API_BASE = '/api';
 
 const createTournament = async () => {
   loading.value = true;

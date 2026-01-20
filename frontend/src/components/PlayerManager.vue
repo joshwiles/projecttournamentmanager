@@ -77,6 +77,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { API_BASE } from '../config/api.js';
 
 const props = defineProps({
   tournamentId: {
@@ -99,8 +100,6 @@ const newPlayerName = ref('');
 const newPlayerRating = ref('');
 const loading = ref(false);
 const error = ref('');
-
-const API_BASE = '/api';
 
 const addPlayer = async () => {
   if (!newPlayerName.value.trim()) return;

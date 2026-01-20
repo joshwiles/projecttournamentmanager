@@ -102,6 +102,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { API_BASE } from '../config/api.js';
 
 const props = defineProps({
   round: {
@@ -122,8 +123,6 @@ const emit = defineEmits(['round-completed', 'result-updated']);
 
 const loading = ref(false);
 const error = ref('');
-
-const API_BASE = '/api';
 
 const completedPairings = computed(() => {
   if (!props.round) return 0;

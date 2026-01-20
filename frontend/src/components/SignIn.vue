@@ -136,6 +136,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { API_BASE } from '../config/api.js';
 
 const emit = defineEmits(['close', 'signed-in', 'signed-up']);
 
@@ -146,8 +147,6 @@ const name = ref('');
 const loading = ref(false);
 const error = ref('');
 const success = ref('');
-
-const API_BASE = '/api';
 
 // Clear messages when switching between sign in/sign up
 watch(isSignUp, () => {

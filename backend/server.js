@@ -37,28 +37,10 @@ app.get('/health', (req, res) => {
 app.use('/api/tournaments', require('./routes/tournaments'));
 app.use('/api/auth', require('./routes/auth'));
 
-// Serve static files from frontend/dist in production
-if (process.env.NODE_ENV === 'production') {
-  const path = require('path');
-  const frontendDist = path.join(__dirname, '../frontend/dist');
-  
-  // Serve static files
-  app.use(express.static(frontendDist));
-  
-  // Handle React/Vue Router - return index.html for all non-API routes
-  app.get('*', (req, res) => {
-    // Don't serve index.html for API routes
-    if (req.path.startsWith('/api')) {
-      return res.status(404).json({ error: 'Route not found' });
-    }
-    res.sendFile(path.join(frontendDist, 'index.html'));
-  });
-} else {
-  // 404 handler for development
-  app.use('*', (req, res) => {
-    res.status(404).json({ error: 'Route not found' });
-  });
-}
+// 404 handler for API routes
+app.use('*', (req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
