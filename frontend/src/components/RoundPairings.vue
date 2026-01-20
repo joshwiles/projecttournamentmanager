@@ -156,6 +156,7 @@ const updateResult = async (pairing, pairingIndex) => {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         result: pairing.result,
       }),
@@ -186,6 +187,7 @@ const completeRound = async () => {
     const url = `${API_BASE}/tournaments/${props.tournamentId}/rounds/${props.round.roundNumber}/complete`;
     const response = await fetch(url, {
       method: 'POST',
+      credentials: 'include',
     }).catch((fetchError) => {
       throw handleNetworkError(fetchError, url);
     });

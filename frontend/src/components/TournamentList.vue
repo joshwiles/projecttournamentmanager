@@ -167,7 +167,9 @@ const loadTournaments = async () => {
 
   try {
     const url = `${API_BASE}/tournaments`;
-    const response = await fetch(url).catch((fetchError) => {
+    const response = await fetch(url, {
+      credentials: 'include'
+    }).catch((fetchError) => {
       throw handleNetworkError(fetchError, url);
     });
     const data = await safeJsonParse(response);
@@ -226,6 +228,7 @@ const deleteTournament = async (tournamentId) => {
     const url = `${API_BASE}/tournaments/${tournamentId}`;
     const response = await fetch(url, {
       method: 'DELETE',
+      credentials: 'include',
     }).catch((fetchError) => {
       throw handleNetworkError(fetchError, url);
     });

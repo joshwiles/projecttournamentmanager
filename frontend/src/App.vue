@@ -1,15 +1,20 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import Dashboard from './components/Dashboard.vue';
 import TournamentList from './components/TournamentList.vue';
 import TournamentView from './components/TournamentView.vue';
 import TournamentCreator from './components/TournamentCreator.vue';
 import SignIn from './components/SignIn.vue';
+import { useAuth } from './composables/useAuth.js';
+
+const { user, loading: authLoading, loadUser, logout: authLogout, isAuthenticated } = useAuth();
 
 const currentView = ref('dashboard'); // 'dashboard', 'list', 'tournament', 'signin'
 const selectedTournamentId = ref(null);
 const showSignIn = ref(false);
-const currentUser = ref(null);
+
+// Computed property for current user
+const currentUser = computed(() => user.value);
 
 const handleTournamentSelected = (tournamentId) => {
   selectedTournamentId.value = tournamentId;
@@ -59,17 +64,29 @@ const handleCloseSignIn = () => {
   mobileMenuOpen.value = false;
 };
 
-const handleSignedIn = (user) => {
-  currentUser.value = user;
+const handleSignedIn = async (signedInUser) => {
+  // User is already set by useAuth composable
+  await loadUser(); // Refresh user data
   showSignIn.value = false;
   currentView.value = 'dashboard';
   mobileMenuOpen.value = false;
 };
 
-const handleSignedUp = (user) => {
+const handleSignedUp = (signedUpUser) => {
   // User signed up, they'll be prompted to sign in
-  currentUser.value = null;
+  // User is already set by useAuth composable
 };
+
+const handleLogout = async () => {
+  await authLogout();
+  currentView.value = 'dashboard';
+  mobileMenuOpen.value = false;
+};
+
+// Load user on app start
+onMounted(async () => {
+  await loadUser();
+});
 </script>
 
 <template>
@@ -127,10 +144,10 @@ const handleSignedUp = (user) => {
               v-else
               class="px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-semibold text-gray-300 flex items-center gap-2 min-h-[44px]"
             >
-              <span class="hidden lg:inline">{{ currentUser.name }}</span>
-              <span class="lg:hidden">{{ currentUser.name.split(' ')[0] }}</span>
+              <span class="hidden lg:inline">{{ currentUser?.name || 'User' }}</span>
+              <span class="lg:hidden">{{ currentUser?.name?.split(' ')[0] || 'User' }}</span>
               <button
-                @click="currentUser = null"
+                @click="handleLogout"
                 class="text-gray-400 active:text-gray-200 transition-colors text-sm min-h-[44px] px-2"
               >
                 Sign Out
@@ -166,9 +183,9 @@ const handleSignedUp = (user) => {
             v-else
             class="px-4 py-3 rounded-xl text-gray-300 space-y-2"
           >
-            <div class="font-semibold">{{ currentUser.name }}</div>
+            <div class="font-semibold">{{ currentUser?.name || 'User' }}</div>
             <button
-              @click="currentUser = null; mobileMenuOpen = false"
+              @click="handleLogout"
               class="w-full text-left text-gray-400 active:text-gray-200 transition-colors text-sm min-h-[44px] px-2"
             >
               Sign Out
@@ -180,31 +197,42 @@ const handleSignedUp = (user) => {
 
     <!-- Main Content -->
     <main class="flex-1 container mx-auto px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8">
-      <SignIn
-        v-if="currentView === 'signin'"
-        @close="handleCloseSignIn"
-        @signed-in="handleSignedIn"
-        @signed-up="handleSignedUp"
-      />
-      <Dashboard
-        v-else-if="currentView === 'dashboard' && !showCreator"
-        @start-tournament="handleStartTournament"
-      />
-      <TournamentCreator
-        v-else-if="currentView === 'dashboard' && showCreator"
-        :initial-tournament-type="selectedTournamentType"
-        @tournament-created="handleTournamentCreated"
-        @cancel="showCreator = false"
-      />
-      <TournamentList
-        v-else-if="currentView === 'list' && !selectedTournamentId"
-        @tournament-selected="handleTournamentSelected"
-      />
-      <TournamentView
-        v-else-if="currentView === 'tournament' && selectedTournamentId"
-        :tournament-id="selectedTournamentId"
-        @close-tournament="handleCloseTournament"
-      />
+      <!-- Show loading spinner while checking auth -->
+      <div v-if="authLoading" class="flex items-center justify-center min-h-[60vh]">
+        <div class="text-center">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"></div>
+          <p class="text-gray-400">Loading...</p>
+        </div>
+      </div>
+      
+      <!-- Content when auth check is complete -->
+      <template v-else>
+        <SignIn
+          v-if="currentView === 'signin'"
+          @close="handleCloseSignIn"
+          @signed-in="handleSignedIn"
+          @signed-up="handleSignedUp"
+        />
+        <Dashboard
+          v-else-if="currentView === 'dashboard' && !showCreator"
+          @start-tournament="handleStartTournament"
+        />
+        <TournamentCreator
+          v-else-if="currentView === 'dashboard' && showCreator"
+          :initial-tournament-type="selectedTournamentType"
+          @tournament-created="handleTournamentCreated"
+          @cancel="showCreator = false"
+        />
+        <TournamentList
+          v-else-if="currentView === 'list' && !selectedTournamentId"
+          @tournament-selected="handleTournamentSelected"
+        />
+        <TournamentView
+          v-else-if="currentView === 'tournament' && selectedTournamentId"
+          :tournament-id="selectedTournamentId"
+          @close-tournament="handleCloseTournament"
+        />
+      </template>
     </main>
 
     <!-- Footer -->
