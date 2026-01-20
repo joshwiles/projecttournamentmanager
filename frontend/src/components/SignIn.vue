@@ -137,6 +137,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { API_BASE } from '../config/api.js';
+import { safeJsonParse } from '../utils/apiHelpers.js';
 
 const emit = defineEmits(['close', 'signed-in', 'signed-up']);
 
@@ -198,9 +199,10 @@ const handleSubmit = async () => {
 
     let data;
     try {
-      data = await response.json();
+      data = await safeJsonParse(response);
     } catch (parseError) {
-      throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      // safeJsonParse already handles the error, just rethrow
+      throw parseError;
     }
 
     if (!response.ok) {

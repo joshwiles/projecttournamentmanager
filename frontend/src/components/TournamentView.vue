@@ -104,6 +104,7 @@ import RoundPairings from './RoundPairings.vue';
 import Standings from './Standings.vue';
 import GameResults from './GameResults.vue';
 import { API_BASE } from '../config/api.js';
+import { safeJsonParse } from '../utils/apiHelpers.js';
 
 const props = defineProps({
   tournamentId: {
@@ -155,7 +156,7 @@ const loadTournament = async (showLoading = true) => {
 
   try {
     const response = await fetch(`${API_BASE}/tournaments/${props.tournamentId}`);
-    const data = await response.json();
+    const data = await safeJsonParse(response);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to load tournament');

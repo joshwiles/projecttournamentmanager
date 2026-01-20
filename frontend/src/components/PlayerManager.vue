@@ -78,6 +78,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { API_BASE } from '../config/api.js';
+import { safeJsonParse } from '../utils/apiHelpers.js';
 
 const props = defineProps({
   tournamentId: {
@@ -119,7 +120,7 @@ const addPlayer = async () => {
       }),
     });
 
-    const data = await response.json();
+    const data = await safeJsonParse(response);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to add player');
@@ -144,7 +145,7 @@ const removePlayer = async (playerId) => {
       method: 'DELETE',
     });
 
-    const data = await response.json();
+    const data = await safeJsonParse(response);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to remove player');
@@ -167,7 +168,7 @@ const startTournament = async () => {
       method: 'POST',
     });
 
-    const data = await response.json();
+    const data = await safeJsonParse(response);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to start tournament');
