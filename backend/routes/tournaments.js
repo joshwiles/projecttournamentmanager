@@ -231,6 +231,30 @@ router.delete('/:id/players/:playerId', (req, res) => {
 });
 
 /**
+ * DELETE /api/tournaments/:id
+ * Delete a tournament
+ */
+router.delete('/:id', (req, res) => {
+  const tournamentId = parseInt(req.params.id);
+  const tournamentIndex = tournaments.findIndex(t => t.id === tournamentId);
+  
+  if (tournamentIndex === -1) {
+    return res.status(404).json({
+      success: false,
+      error: 'Tournament not found',
+    });
+  }
+
+  // Remove tournament from array
+  tournaments.splice(tournamentIndex, 1);
+
+  res.json({
+    success: true,
+    message: 'Tournament deleted successfully',
+  });
+});
+
+/**
  * POST /api/tournaments/:id/start
  * Start the tournament (generate first round)
  */
