@@ -209,7 +209,7 @@ const handleSignedUp = (user) => {
 
     <!-- Footer -->
     <footer class="backdrop-blur-xl bg-gray-800/60 border-t border-gray-700/50 py-4 md:py-6 mt-auto">
-      <div class="container mx-auto text-center px-4">
+      <div class="container mx-auto px-4 flex justify-center">
         <p class="text-xs md:text-sm text-gray-400 font-medium">
           &copy; 2025 Pawn Up Solutions
         </p>
