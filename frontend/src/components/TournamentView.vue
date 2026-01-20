@@ -108,7 +108,7 @@ import RoundPairings from './RoundPairings.vue';
 import Standings from './Standings.vue';
 import GameResults from './GameResults.vue';
 import { API_BASE } from '../config/api.js';
-import { safeJsonParse } from '../utils/apiHelpers.js';
+import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 
 const props = defineProps({
   tournamentId: {
@@ -159,7 +159,10 @@ const loadTournament = async (showLoading = true) => {
   error.value = '';
 
   try {
-    const response = await fetch(`${API_BASE}/tournaments/${props.tournamentId}`);
+    const url = `${API_BASE}/tournaments/${props.tournamentId}`;
+    const response = await fetch(url).catch((fetchError) => {
+      throw handleNetworkError(fetchError, url);
+    });
     const data = await safeJsonParse(response);
 
     if (!response.ok) {

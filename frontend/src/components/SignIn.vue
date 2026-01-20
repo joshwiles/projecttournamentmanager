@@ -137,7 +137,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { API_BASE } from '../config/api.js';
-import { safeJsonParse } from '../utils/apiHelpers.js';
+import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 
 const emit = defineEmits(['close', 'signed-in', 'signed-up']);
 
@@ -189,12 +189,15 @@ const handleSubmit = async () => {
 
     console.log('Sending request:', { endpoint, body: { ...body, password: '***' } });
 
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const url = `${API_BASE}${endpoint}`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+    }).catch((fetchError) => {
+      throw handleNetworkError(fetchError, url);
     });
 
     let data;

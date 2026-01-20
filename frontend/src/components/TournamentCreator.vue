@@ -79,7 +79,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { API_BASE } from '../config/api.js';
-import { safeJsonParse } from '../utils/apiHelpers.js';
+import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 
 const emit = defineEmits(['tournament-created']);
 
@@ -105,7 +105,8 @@ const createTournament = async () => {
   error.value = '';
 
   try {
-    const response = await fetch(`${API_BASE}/tournaments`, {
+    const url = `${API_BASE}/tournaments`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -115,6 +116,8 @@ const createTournament = async () => {
         tournamentType: tournamentType.value,
         numberOfRounds: isSwiss.value ? numberOfRounds.value : 0,
       }),
+    }).catch((fetchError) => {
+      throw handleNetworkError(fetchError, url);
     });
 
     const data = await safeJsonParse(response);

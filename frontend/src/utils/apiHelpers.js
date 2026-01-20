@@ -1,6 +1,42 @@
 import { API_BASE } from '../config/api.js';
 
 /**
+ * Handle fetch network errors with helpful messages
+ * @param {Error} error - The fetch error
+ * @param {string} url - The URL that failed
+ * @returns {Error} A more descriptive error
+ */
+export function handleNetworkError(error, url) {
+  console.error('Network error details:', {
+    name: error.name,
+    message: error.message,
+    url: url,
+    apiBase: API_BASE,
+  });
+
+  if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    return new Error(
+      `Network Error: Failed to connect to API\n\n` +
+      `Possible causes:\n` +
+      `• Backend server is not running\n` +
+      `• CORS is blocking the request\n` +
+      `• API URL is incorrect\n` +
+      `• Network connectivity issue\n\n` +
+      `Request URL: ${url}\n` +
+      `API_BASE: ${API_BASE}\n` +
+      `VITE_API_URL: ${import.meta.env.VITE_API_URL || 'NOT SET'}\n\n` +
+      `Check:\n` +
+      `1. Is the backend server running?\n` +
+      `2. Is CORS_ORIGIN set correctly in backend?\n` +
+      `3. Is VITE_API_URL set correctly in frontend?\n` +
+      `4. Check browser console (F12) for CORS errors`
+    );
+  }
+
+  return error;
+}
+
+/**
  * Safely parse JSON response, checking for HTML errors
  * @param {Response} response - Fetch response object
  * @returns {Promise<Object>} Parsed JSON data
