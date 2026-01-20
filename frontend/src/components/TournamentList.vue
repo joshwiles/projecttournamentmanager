@@ -22,7 +22,11 @@
     </div>
 
     <div v-else-if="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      {{ error }}
+      <div class="font-semibold mb-2">⚠️ API Connection Error</div>
+      <div class="text-sm whitespace-pre-line">{{ error }}</div>
+      <div class="mt-3 text-xs text-red-600">
+        <strong>Quick Fix:</strong> Check browser console (F12) for detailed error information.
+      </div>
     </div>
 
     <div v-else-if="tournaments.length === 0" class="bg-white rounded-lg shadow-md p-8 text-center">
