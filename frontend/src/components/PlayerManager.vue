@@ -32,8 +32,9 @@
       </form>
     </div>
 
-    <div v-if="error" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-      {{ error }}
+    <div v-if="error" class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+      <div class="font-semibold mb-2">⚠️ Error</div>
+      <div class="text-sm whitespace-pre-line">{{ error }}</div>
     </div>
 
     <div v-if="players.length === 0" class="text-gray-500 text-center py-8">
@@ -78,7 +79,7 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { API_BASE } from '../config/api.js';
-import { safeJsonParse } from '../utils/apiHelpers.js';
+import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 
 const props = defineProps({
   tournamentId: {
@@ -109,7 +110,8 @@ const addPlayer = async () => {
   error.value = '';
 
   try {
-    const response = await fetch(`${API_BASE}/tournaments/${props.tournamentId}/players`, {
+    const url = `${API_BASE}/tournaments/${props.tournamentId}/players`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -118,6 +120,8 @@ const addPlayer = async () => {
         name: newPlayerName.value.trim(),
         rating: newPlayerRating.value ? parseInt(newPlayerRating.value) : null,
       }),
+    }).catch((fetchError) => {
+      throw handleNetworkError(fetchError, url);
     });
 
     const data = await safeJsonParse(response);
@@ -141,8 +145,11 @@ const removePlayer = async (playerId) => {
   error.value = '';
 
   try {
-    const response = await fetch(`${API_BASE}/tournaments/${props.tournamentId}/players/${playerId}`, {
+    const url = `${API_BASE}/tournaments/${props.tournamentId}/players/${playerId}`;
+    const response = await fetch(url, {
       method: 'DELETE',
+    }).catch((fetchError) => {
+      throw handleNetworkError(fetchError, url);
     });
 
     const data = await safeJsonParse(response);
@@ -164,8 +171,17 @@ const startTournament = async () => {
   error.value = '';
 
   try {
-    const response = await fetch(`${API_BASE}/tournaments/${props.tournamentId}/start`, {
+    const url = `${API_BASE}/tournaments/${props.tournamentId}/start`;
+    console.log('Starting tournament, URL:', url);
+    
+    const response = await fetch(url, {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).catch((fetchError) => {
+      // Handle network errors (CORS, connection refused, etc.)
+      throw handleNetworkError(fetchError, url);
     });
 
     const data = await safeJsonParse(response);
@@ -176,7 +192,8 @@ const startTournament = async () => {
 
     emit('tournament-started', data.tournament);
   } catch (err) {
-    error.value = err.message;
+    console.error('Error starting tournament:', err);
+    error.value = err.message || 'Failed to start tournament. Please check your connection and try again.';
   } finally {
     loading.value = false;
   }

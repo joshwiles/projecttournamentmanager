@@ -103,7 +103,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { API_BASE } from '../config/api.js';
-import { safeJsonParse } from '../utils/apiHelpers.js';
+import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 
 const props = defineProps({
   round: {
@@ -150,18 +150,18 @@ const updateResult = async (pairing, pairingIndex) => {
   error.value = '';
 
   try {
-    const response = await fetch(
-      `${API_BASE}/tournaments/${props.tournamentId}/rounds/${props.round.roundNumber}/pairings/${pairingIndex}/result`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          result: pairing.result,
-        }),
-      }
-    );
+    const url = `${API_BASE}/tournaments/${props.tournamentId}/rounds/${props.round.roundNumber}/pairings/${pairingIndex}/result`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        result: pairing.result,
+      }),
+    }).catch((fetchError) => {
+      throw handleNetworkError(fetchError, url);
+    });
 
     const data = await safeJsonParse(response);
 
@@ -183,12 +183,12 @@ const completeRound = async () => {
   error.value = '';
 
   try {
-    const response = await fetch(
-      `${API_BASE}/tournaments/${props.tournamentId}/rounds/${props.round.roundNumber}/complete`,
-      {
-        method: 'POST',
-      }
-    );
+    const url = `${API_BASE}/tournaments/${props.tournamentId}/rounds/${props.round.roundNumber}/complete`;
+    const response = await fetch(url, {
+      method: 'POST',
+    }).catch((fetchError) => {
+      throw handleNetworkError(fetchError, url);
+    });
 
     const data = await safeJsonParse(response);
 
