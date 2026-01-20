@@ -1,7 +1,7 @@
 <template>
-  <div class="sign-in flex items-center justify-center min-h-[60vh]">
-    <div class="w-full max-w-md animate-fade-in">
-      <div class="bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl p-12 border border-gray-700/50">
+  <div class="sign-in flex items-center justify-center min-h-[60vh] py-4 md:py-8">
+    <div class="w-full max-w-md animate-fade-in px-4">
+      <div class="bg-gray-800/90 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 lg:p-12 border border-gray-700/50">
         <!-- Toggle between Sign In and Sign Up -->
         <div class="flex gap-2 mb-8 bg-gray-700/50 rounded-xl p-1">
           <button
@@ -29,11 +29,11 @@
         </div>
 
         <!-- Header -->
-        <div class="text-center mb-8">
-          <h2 class="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-2">
+        <div class="text-center mb-6 md:mb-8">
+          <h2 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-2">
             {{ isSignUp ? 'Create Account' : 'Welcome Back' }}
           </h2>
-          <p class="text-gray-400 text-sm">
+          <p class="text-gray-400 text-sm md:text-base">
             {{ isSignUp ? 'Sign up to get started' : 'Sign in to your account' }}
           </p>
         </div>
@@ -42,7 +42,7 @@
         <form @submit.prevent="handleSubmit" class="space-y-5">
           <!-- Email -->
           <div>
-            <label for="email" class="block text-sm font-semibold text-gray-300 mb-2">
+            <label for="email" class="block text-sm md:text-base font-semibold text-gray-300 mb-2">
               Email
             </label>
             <input
@@ -50,14 +50,14 @@
               v-model="email"
               type="email"
               required
-              class="w-full px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400"
+              class="w-full px-4 md:px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
               placeholder="Enter your email"
             />
           </div>
 
           <!-- Password -->
           <div>
-            <label for="password" class="block text-sm font-semibold text-gray-300 mb-2">
+            <label for="password" class="block text-sm md:text-base font-semibold text-gray-300 mb-2">
               Password
             </label>
             <input
@@ -66,14 +66,14 @@
               type="password"
               required
               :minlength="isSignUp ? 6 : undefined"
-              class="w-full px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400"
+              class="w-full px-4 md:px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
               placeholder="Enter your password"
             />
           </div>
 
           <!-- Name (only for sign up) -->
           <div v-if="isSignUp">
-            <label for="name" class="block text-sm font-semibold text-gray-300 mb-2">
+            <label for="name" class="block text-sm md:text-base font-semibold text-gray-300 mb-2">
               Name
             </label>
             <input
@@ -81,7 +81,7 @@
               v-model="name"
               type="text"
               required
-              class="w-full px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400"
+              class="w-full px-4 md:px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
               placeholder="Enter your name"
             />
           </div>
@@ -110,7 +110,7 @@
           <button
             type="submit"
             :disabled="loading"
-            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-8 rounded-xl hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 font-bold text-lg shadow-md shadow-indigo-500/10 hover:shadow-lg hover:shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-8 rounded-xl active:from-indigo-500 active:to-purple-500 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 font-bold text-base md:text-lg shadow-md shadow-indigo-500/10 active:shadow-lg active:shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
           >
             <span v-if="loading" class="flex items-center justify-center gap-2">
               <span class="inline-block animate-spin rounded-full h-5 w-5 border-3 border-white border-t-transparent"></span>
@@ -125,7 +125,7 @@
         <!-- Close Button -->
         <button
           @click="$emit('close')"
-          class="mt-6 w-full text-gray-400 hover:text-gray-200 transition-colors text-sm font-medium"
+          class="mt-6 w-full text-gray-400 active:text-gray-200 hover:text-gray-200 transition-colors text-sm md:text-base font-medium min-h-[44px]"
         >
           Cancel
         </button>

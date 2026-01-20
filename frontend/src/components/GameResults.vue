@@ -1,6 +1,6 @@
 <template>
-  <div class="game-results bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-bold mb-4">Game Results</h2>
+  <div class="game-results bg-white rounded-lg shadow-md p-4 md:p-6">
+    <h2 class="text-xl md:text-2xl font-bold mb-4">Game Results</h2>
 
     <div v-if="!tournament || !tournament.rounds || tournament.rounds.length === 0" class="text-gray-500 text-center py-8">
       No games played yet
@@ -17,31 +17,31 @@
           <span class="text-sm text-gray-500">{{ getRoundDate(round) }}</span>
         </div>
 
-        <div class="space-y-2">
+        <div class="space-y-3">
           <div
             v-for="(pairing, index) in round.pairings"
             :key="index"
-            class="flex items-center justify-between p-2 bg-gray-50 rounded hover:bg-gray-100 transition-colors"
+            class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 md:p-2 bg-gray-50 rounded active:bg-gray-100 hover:bg-gray-100 transition-colors"
           >
-            <div class="flex-1 flex items-center gap-3">
-              <span class="text-sm text-gray-500 w-12">Board {{ pairing.boardNumber }}</span>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs md:text-sm text-gray-500 mb-2 sm:mb-0 sm:inline-block sm:mr-3 sm:w-auto w-full">Board {{ pairing.boardNumber }}</div>
               
-              <div v-if="pairing.isBye" class="flex items-center gap-2">
-                <span class="font-medium">{{ pairing.player1.name }}</span>
-                <span v-if="pairing.player1.rating" class="text-xs text-gray-500">
+              <div v-if="pairing.isBye" class="flex items-center gap-2 flex-wrap">
+                <span class="font-medium text-base md:text-lg">{{ pairing.player1.name }}</span>
+                <span v-if="pairing.player1.rating" class="text-xs md:text-sm text-gray-500">
                   ({{ pairing.player1.rating }})
                 </span>
-                <span class="text-green-600 font-semibold text-sm">BYE</span>
+                <span class="text-green-600 font-semibold text-sm md:text-base">BYE</span>
               </div>
 
-              <div v-else class="flex items-center gap-2 flex-1">
-                <div class="flex items-center gap-2">
+              <div v-else class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-2 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
                   <span
-                    class="w-2 h-2 rounded-full"
+                    class="w-3 h-3 md:w-2 md:h-2 rounded-full flex-shrink-0"
                     :class="pairing.whitePlayerId === pairing.player1.id ? 'bg-white border-2 border-gray-400' : 'bg-black'"
                   ></span>
-                  <span class="font-medium">{{ pairing.player1.name }}</span>
-                  <span v-if="pairing.player1.rating" class="text-xs text-gray-500">
+                  <span class="font-medium text-base md:text-lg break-words">{{ pairing.player1.name }}</span>
+                  <span v-if="pairing.player1.rating" class="text-xs md:text-sm text-gray-500">
                     ({{ pairing.player1.rating }})
                   </span>
                   <span class="text-xs bg-gray-200 px-2 py-0.5 rounded">
@@ -49,15 +49,15 @@
                   </span>
                 </div>
 
-                <span class="text-gray-400 mx-2">vs</span>
+                <span class="text-gray-400 mx-0 sm:mx-2 text-center sm:text-left text-sm md:text-base">vs</span>
 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                   <span
-                    class="w-2 h-2 rounded-full"
+                    class="w-3 h-3 md:w-2 md:h-2 rounded-full flex-shrink-0"
                     :class="pairing.whitePlayerId === pairing.player2.id ? 'bg-white border-2 border-gray-400' : 'bg-black'"
                   ></span>
-                  <span class="font-medium">{{ pairing.player2.name }}</span>
-                  <span v-if="pairing.player2.rating" class="text-xs text-gray-500">
+                  <span class="font-medium text-base md:text-lg break-words">{{ pairing.player2.name }}</span>
+                  <span v-if="pairing.player2.rating" class="text-xs md:text-sm text-gray-500">
                     ({{ pairing.player2.rating }})
                   </span>
                   <span class="text-xs bg-gray-200 px-2 py-0.5 rounded">
@@ -67,15 +67,15 @@
               </div>
             </div>
 
-            <div class="ml-4">
+            <div class="sm:ml-4 flex-shrink-0">
               <span
                 v-if="pairing.result"
-                class="px-3 py-1 rounded font-medium text-sm"
+                class="inline-block px-3 py-2 md:py-1 rounded font-medium text-sm md:text-base text-center min-w-[80px]"
                 :class="getResultClass(pairing.result)"
               >
                 {{ formatResult(pairing.result) }}
               </span>
-              <span v-else class="text-gray-400 text-sm italic">No result</span>
+              <span v-else class="text-gray-400 text-sm md:text-base italic">No result</span>
             </div>
           </div>
         </div>

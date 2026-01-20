@@ -1,14 +1,14 @@
 <template>
-  <div class="dashboard flex items-center justify-center min-h-[60vh]">
-    <div class="w-full max-w-xl animate-fade-in">
+  <div class="dashboard flex items-center justify-center min-h-[60vh] py-4 md:py-8">
+    <div class="w-full max-w-xl animate-fade-in px-4">
       <!-- Welcome Card -->
-      <div class="bg-gray-800/90 backdrop-blur-xl rounded-3xl shadow-2xl p-12 border border-gray-700/50">
+      <div class="bg-gray-800/90 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 lg:p-12 border border-gray-700/50">
         <!-- Welcome Message -->
-        <div class="text-center mb-10">
-          <h1 class="text-5xl md:text-6xl font-extrabold mb-4 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+        <div class="text-center mb-6 md:mb-10">
+          <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-3 md:mb-4 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             Welcome
           </h1>
-          <p class="text-xl md:text-2xl text-gray-300 font-medium">
+          <p class="text-base md:text-xl lg:text-2xl text-gray-300 font-medium">
             to Pawn Up Solutions' Free Tournament Manager
           </p>
         </div>
@@ -23,7 +23,7 @@
             <select
               id="tournament-style"
               v-model="tournamentType"
-              class="w-full px-5 py-4 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 appearance-none cursor-pointer hover:bg-gray-700/70"
+              class="w-full px-4 md:px-5 py-3 md:py-4 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 appearance-none cursor-pointer active:bg-gray-700/70 hover:bg-gray-700/70 text-base min-h-[44px]"
             >
               <option value="swiss_uscf" class="bg-gray-800">Swiss (USCF)</option>
               <option value="swiss_fide_dutch" class="bg-gray-800">Swiss (FIDE Dutch)</option>
@@ -50,10 +50,10 @@
           <!-- Start Tournament Button -->
           <button
             @click="handleStartTournament"
-            class="w-full group relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-8 rounded-xl hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 font-bold text-lg shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:shadow-indigo-500/50 hover:scale-105 transform"
+            class="w-full group relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 md:py-3 px-8 rounded-xl active:from-indigo-500 active:to-purple-500 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 font-bold text-base md:text-lg shadow-lg shadow-indigo-500/30 active:shadow-xl active:shadow-indigo-500/50 hover:shadow-xl hover:shadow-indigo-500/50 active:scale-[0.98] hover:scale-105 transform min-h-[44px]"
           >
             <span class="flex items-center justify-center gap-3">
-              <svg class="w-6 h-6 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 md:w-6 md:h-6 group-active:translate-x-1 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
               Start Tournament

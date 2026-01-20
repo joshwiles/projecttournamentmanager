@@ -10,38 +10,40 @@
 
     <div v-else-if="tournament">
       <!-- Tournament Header -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div class="flex justify-between items-start">
-          <div>
-            <h1 class="text-3xl font-bold mb-2">{{ tournament.name }}</h1>
-            <div class="flex gap-4 text-sm text-gray-600">
+      <div class="bg-white rounded-lg shadow-md p-4 md:p-6 mb-4 md:mb-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+          <div class="flex-1 min-w-0">
+            <h1 class="text-2xl md:text-3xl font-bold mb-2 break-words">{{ tournament.name }}</h1>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm md:text-base text-gray-600">
               <span>Rounds: {{ tournament.currentRound }} / {{ tournament.numberOfRounds }}</span>
               <span>Players: {{ tournament.players.length }}</span>
-              <span
-                class="px-2 py-1 rounded text-xs font-medium"
-                :class="{
-                  'bg-purple-100 text-purple-800': tournament.tournamentType === 'round_robin',
-                  'bg-indigo-100 text-indigo-800': tournament.tournamentType === 'double_round_robin',
-                  'bg-blue-50 text-blue-700': !tournament.tournamentType || tournament.tournamentType.startsWith('swiss'),
-                }"
-              >
-                {{ tournamentTypeLabel }}
-              </span>
-              <span
-                class="px-2 py-1 rounded text-xs font-medium"
-                :class="{
-                  'bg-blue-100 text-blue-800': tournament.status === 'registration',
-                  'bg-green-100 text-green-800': tournament.status === 'in_progress',
-                  'bg-gray-100 text-gray-800': tournament.status === 'completed',
-                }"
-              >
-                {{ statusLabel }}
-              </span>
+              <div class="flex gap-2 flex-wrap">
+                <span
+                  class="px-2 py-1 rounded text-xs font-medium"
+                  :class="{
+                    'bg-purple-100 text-purple-800': tournament.tournamentType === 'round_robin',
+                    'bg-indigo-100 text-indigo-800': tournament.tournamentType === 'double_round_robin',
+                    'bg-blue-50 text-blue-700': !tournament.tournamentType || tournament.tournamentType.startsWith('swiss'),
+                  }"
+                >
+                  {{ tournamentTypeLabel }}
+                </span>
+                <span
+                  class="px-2 py-1 rounded text-xs font-medium"
+                  :class="{
+                    'bg-blue-100 text-blue-800': tournament.status === 'registration',
+                    'bg-green-100 text-green-800': tournament.status === 'in_progress',
+                    'bg-gray-100 text-gray-800': tournament.status === 'completed',
+                  }"
+                >
+                  {{ statusLabel }}
+                </span>
+              </div>
             </div>
           </div>
           <button
             @click="$emit('close-tournament')"
-            class="text-gray-500 hover:text-gray-700"
+            class="w-full sm:w-auto text-gray-500 active:text-gray-700 hover:text-gray-700 px-4 py-2 rounded-md active:bg-gray-100 min-h-[44px] text-left sm:text-center font-medium"
           >
             ← Back to Tournaments
           </button>
@@ -57,7 +59,7 @@
         @player-added="loadTournament"
         @player-removed="loadTournament"
         @tournament-started="loadTournament"
-        class="mb-6"
+        class="mb-4 md:mb-6"
       />
 
       <!-- Standings -->
@@ -65,7 +67,7 @@
         v-if="tournament.status !== 'registration'"
         :standings="standings"
         :tournament="tournament"
-        class="mb-6"
+        class="mb-4 md:mb-6"
       />
 
       <!-- Round Pairings -->
@@ -76,14 +78,14 @@
         :current-round="tournament.currentRound"
         @round-completed="handleRoundCompleted"
         @result-updated="loadTournament"
-        class="mb-6"
+        class="mb-4 md:mb-6"
       />
 
       <!-- Game Results History -->
       <GameResults
         v-if="tournament.status === 'in_progress' || tournament.status === 'completed'"
         :tournament="tournament"
-        class="mb-6"
+        class="mb-4 md:mb-6"
       />
 
       <!-- Tournament Complete Message -->

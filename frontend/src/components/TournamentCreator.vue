@@ -1,10 +1,10 @@
 <template>
-  <div class="tournament-creator bg-white rounded-lg shadow-md p-6">
-    <h2 class="text-2xl font-bold mb-4">Create New Tournament</h2>
+  <div class="tournament-creator bg-white rounded-lg shadow-md p-4 md:p-6">
+    <h2 class="text-xl md:text-2xl font-bold mb-4">Create New Tournament</h2>
     
     <form @submit.prevent="createTournament" class="space-y-4">
       <div>
-        <label for="tournament-name" class="block text-sm font-medium text-gray-700 mb-2">
+        <label for="tournament-name" class="block text-sm md:text-base font-medium text-gray-700 mb-2">
           Tournament Name
         </label>
         <input
@@ -12,20 +12,20 @@
           v-model="tournamentName"
           type="text"
           required
-          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-4 py-3 md:py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base min-h-[44px]"
           placeholder="Enter tournament name"
         />
       </div>
 
       <div>
-        <label for="tournament-type" class="block text-sm font-medium text-gray-700 mb-2">
+        <label for="tournament-type" class="block text-sm md:text-base font-medium text-gray-700 mb-2">
           Tournament Type
         </label>
         <select
           id="tournament-type"
           v-model="tournamentType"
           @change="updateRoundsBasedOnType"
-          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-4 py-3 md:py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base min-h-[44px] bg-white"
         >
           <option value="swiss_uscf">Swiss (USCF)</option>
           <option value="swiss_fide_dutch">Swiss (FIDE Dutch)</option>
@@ -36,7 +36,7 @@
       </div>
 
       <div v-if="isSwiss">
-        <label for="number-of-rounds" class="block text-sm font-medium text-gray-700 mb-2">
+        <label for="number-of-rounds" class="block text-sm md:text-base font-medium text-gray-700 mb-2">
           Number of Rounds
         </label>
         <input
@@ -46,11 +46,11 @@
           min="1"
           max="20"
           required
-          class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          class="w-full px-4 py-3 md:py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base min-h-[44px]"
         />
       </div>
 
-      <div v-else class="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+      <div v-else class="text-sm md:text-base text-gray-600 bg-gray-50 p-3 md:p-4 rounded">
         <p v-if="tournamentType === 'round_robin'">
           Round Robin: Each player plays every other player once.
           <span class="font-semibold">Rounds will be calculated automatically based on number of players.</span>
@@ -64,7 +64,7 @@
       <button
         type="submit"
         :disabled="loading"
-        class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        class="w-full bg-blue-600 text-white py-3 md:py-2 px-4 rounded-md active:bg-blue-700 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold min-h-[44px] text-base"
       >
         {{ loading ? 'Creating...' : 'Create Tournament' }}
       </button>
