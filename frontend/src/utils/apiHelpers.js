@@ -10,26 +10,61 @@ export async function safeJsonParse(response) {
   // Check if response is actually JSON
   const contentType = response.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
-    const text = await response.text();
-    console.error('Non-JSON response received:', text.substring(0, 500));
+    // Clone the response so we can read it without consuming it
+    const clonedResponse = response.clone();
+    const text = await clonedResponse.text();
+    
+    console.error('=== API Error Details ===');
     console.error('Response URL:', response.url);
     console.error('Response status:', response.status, response.statusText);
+    console.error('Content-Type:', contentType);
+    console.error('Response body (first 1000 chars):', text.substring(0, 1000));
+    console.error('Current API_BASE:', API_BASE);
+    console.error('VITE_API_URL env:', import.meta.env.VITE_API_URL || 'NOT SET');
+    console.error('========================');
     
-    // Try to extract useful error info
-    if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-      throw new Error(
-        `API returned HTML instead of JSON. This usually means:\n` +
-        `1. The API endpoint doesn't exist (404 error)\n` +
-        `2. VITE_API_URL is not set correctly in production\n` +
-        `3. The backend server is not running\n\n` +
-        `Current API_BASE: ${API_BASE}\n` +
-        `Response URL: ${response.url}\n` +
-        `Response status: ${response.status} ${response.statusText}\n\n` +
-        `To fix: Set VITE_API_URL environment variable to your backend URL (e.g., https://your-backend.up.railway.app/api)`
-      );
+    // Try to extract useful error info from HTML
+    if (text.includes('<!DOCTYPE') || text.includes('<html') || text.includes('<body')) {
+      // Try to extract title or error message from HTML
+      const titleMatch = text.match(/<title[^>]*>([^<]+)<\/title>/i);
+      const h1Match = text.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+      const errorInfo = titleMatch ? titleMatch[1] : (h1Match ? h1Match[1] : 'Unknown error');
+      
+      // Create a user-friendly error message
+      let errorMessage = `API returned HTML instead of JSON (${response.status} ${response.statusText})\n\n`;
+      errorMessage += `Possible causes:\n`;
+      errorMessage += `• API endpoint doesn't exist (404 error)\n`;
+      errorMessage += `• VITE_API_URL not set in production\n`;
+      errorMessage += `• Backend server not running\n`;
+      errorMessage += `• Request routed to frontend instead of backend\n\n`;
+      
+      // Show the actual URL being called
+      const requestUrl = response.url || 'Unknown';
+      errorMessage += `Request URL: ${requestUrl}\n`;
+      errorMessage += `API_BASE: ${API_BASE}\n`;
+      
+      const viteApiUrl = import.meta.env.VITE_API_URL;
+      if (!viteApiUrl && import.meta.env.PROD) {
+        errorMessage += `\n❌ VITE_API_URL is NOT SET (this is likely the problem!)\n\n`;
+        errorMessage += `🔧 SOLUTION:\n`;
+        errorMessage += `1. Go to your deployment platform (Vercel/Railway)\n`;
+        errorMessage += `2. Add environment variable: VITE_API_URL\n`;
+        errorMessage += `3. Set value to: https://your-backend.up.railway.app/api\n`;
+        errorMessage += `4. Redeploy your frontend\n`;
+      } else {
+        errorMessage += `VITE_API_URL: ${viteApiUrl || 'Not set'}\n`;
+      }
+      
+      throw new Error(errorMessage);
     }
     
-    throw new Error(`Expected JSON but received: ${contentType}. Response: ${text.substring(0, 200)}`);
+    // For other non-JSON content types
+    throw new Error(
+      `Expected JSON but received ${contentType}\n` +
+      `Response URL: ${response.url}\n` +
+      `Status: ${response.status} ${response.statusText}\n` +
+      `First 200 chars: ${text.substring(0, 200)}`
+    );
   }
   
   return await response.json();
