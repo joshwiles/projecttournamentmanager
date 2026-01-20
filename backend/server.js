@@ -2,10 +2,21 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 require('dotenv').config();
+
+// Initialize database (creates tables if needed)
+require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Session secret validation
+if (!process.env.SESSION_SECRET) {
+  console.warn('⚠️  WARNING: SESSION_SECRET not set. Using default (INSECURE - change in production!)');
+}
+const SESSION_SECRET = process.env.SESSION_SECRET || 'default-secret-change-in-production';
 
 // Middleware
 app.use(helmet({
@@ -54,6 +65,48 @@ app.use(cors(corsOptions));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Session configuration
+const isProduction = process.env.NODE_ENV === 'production';
+const isTest = process.env.NODE_ENV === 'test';
+const clientOrigin = process.env.CLIENT_ORIGIN || (isProduction ? process.env.CORS_ORIGIN : 'http://localhost:5173');
+
+let sessionStore;
+if (isProduction && process.env.DATABASE_URL && !isTest) {
+  // Use PostgreSQL session store in production (not in tests)
+  try {
+    const { Pool } = require('pg');
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_URL.includes('localhost') ? false : {
+        rejectUnauthorized: false
+      }
+    });
+    sessionStore = new pgSession({
+      pool: pool,
+      tableName: 'session',
+      createTableIfMissing: true // Auto-create session table
+    });
+  } catch (error) {
+    console.warn('⚠️  Could not initialize PostgreSQL session store, using memory store:', error.message);
+    sessionStore = undefined; // Will use memory store
+  }
+}
+
+app.use(session({
+  secret: SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  store: sessionStore,
+  name: 'sessionId',
+  cookie: {
+    httpOnly: true,
+    secure: isProduction, // Only send over HTTPS in production
+    sameSite: isProduction ? 'lax' : 'lax', // 'lax' allows cookies on same-site navigation
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    domain: isProduction ? undefined : undefined // Let browser handle domain
+  }
+}));
 
 // Routes
 app.get('/', (req, res) => {

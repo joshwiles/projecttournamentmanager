@@ -116,6 +116,7 @@ const addPlayer = async () => {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         name: newPlayerName.value.trim(),
         rating: newPlayerRating.value ? parseInt(newPlayerRating.value) : null,
@@ -148,6 +149,7 @@ const removePlayer = async (playerId) => {
     const url = `${API_BASE}/tournaments/${props.tournamentId}/players/${playerId}`;
     const response = await fetch(url, {
       method: 'DELETE',
+      credentials: 'include',
     }).catch((fetchError) => {
       throw handleNetworkError(fetchError, url);
     });
@@ -179,6 +181,7 @@ const startTournament = async () => {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     }).catch((fetchError) => {
       // Handle network errors (CORS, connection refused, etc.)
       throw handleNetworkError(fetchError, url);

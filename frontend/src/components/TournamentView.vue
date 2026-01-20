@@ -160,7 +160,9 @@ const loadTournament = async (showLoading = true) => {
 
   try {
     const url = `${API_BASE}/tournaments/${props.tournamentId}`;
-    const response = await fetch(url).catch((fetchError) => {
+    const response = await fetch(url, {
+      credentials: 'include'
+    }).catch((fetchError) => {
       throw handleNetworkError(fetchError, url);
     });
     const data = await safeJsonParse(response);

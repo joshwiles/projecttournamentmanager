@@ -78,9 +78,41 @@ This template provides a minimal starting point. You can:
 
 Copy `env.example` to `.env` and configure:
 
+### Required Variables
+
+- `SESSION_SECRET` - **REQUIRED** - Secret key for session encryption. Generate with: `openssl rand -base64 32`
 - `PORT` - Server port (default: 3000)
 - `NODE_ENV` - Environment (development/production)
-- `CORS_ORIGIN` - Allowed origin for CORS
+- `CORS_ORIGIN` - Allowed origin for CORS (e.g., `https://your-frontend.vercel.app`)
+
+### Optional Variables
+
+- `DATABASE_URL` - PostgreSQL connection string (for production). If not set, uses SQLite locally.
+- `CLIENT_ORIGIN` - Frontend URL for cookie settings (defaults to CORS_ORIGIN)
+- `DB_PATH` - Path to SQLite database file (default: `./dev.db`)
+
+## Authentication
+
+The app includes a complete authentication system:
+
+- **Sign Up**: Create new user accounts
+- **Sign In**: Login with email/password
+- **Session Management**: Secure cookie-based sessions
+- **Password Security**: Bcrypt hashing with 12 rounds
+- **Rate Limiting**: Auth routes are rate-limited (5 requests per 15 minutes)
+- **Input Validation**: Email format, password strength (min 8 chars)
+
+### Database
+
+- **Production**: Uses PostgreSQL (set `DATABASE_URL`)
+- **Development**: Uses SQLite (`dev.db` file, auto-created)
+
+### Session Security
+
+- Sessions stored in secure HTTP-only cookies
+- 7-day expiration
+- SameSite=Lax for CSRF protection
+- Secure flag enabled in production (HTTPS required)
 
 ## License
 

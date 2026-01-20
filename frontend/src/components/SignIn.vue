@@ -65,7 +65,7 @@
               v-model="password"
               type="password"
               required
-              :minlength="isSignUp ? 6 : undefined"
+              :minlength="isSignUp ? 8 : undefined"
               class="w-full px-4 md:px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
               placeholder="Enter your password"
             />
@@ -136,16 +136,16 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import { API_BASE } from '../config/api.js';
-import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
+import { useAuth } from '../composables/useAuth.js';
 
 const emit = defineEmits(['close', 'signed-in', 'signed-up']);
+
+const { signup, login, loading, error: authError } = useAuth();
 
 const isSignUp = ref(false);
 const email = ref('');
 const password = ref('');
 const name = ref('');
-const loading = ref(false);
 const error = ref('');
 const success = ref('');
 
@@ -155,95 +155,69 @@ watch(isSignUp, () => {
   success.value = '';
 });
 
+// Watch for auth errors
+watch(authError, (newError) => {
+  if (newError) {
+    error.value = newError;
+  }
+});
+
 const handleSubmit = async () => {
-  loading.value = true;
   error.value = '';
   success.value = '';
 
-  try {
-    const endpoint = isSignUp ? '/auth/signup' : '/auth/signin';
-    
-    // Validate required fields
-    if (isSignUp && (!email.value || !password.value || !name.value)) {
+  // Trim values for validation
+  const emailTrimmed = email.value.trim();
+  const passwordTrimmed = password.value.trim();
+  const nameTrimmed = name.value.trim();
+
+  // Validate required fields
+  if (isSignUp.value) {
+    // Sign up validation
+    if (!emailTrimmed || !passwordTrimmed || !nameTrimmed) {
       error.value = 'Please fill in all fields';
-      loading.value = false;
       return;
     }
     
-    if (!isSignUp && (!email.value || !password.value)) {
+    // Validate password length for signup
+    if (passwordTrimmed.length < 8) {
+      error.value = 'Password must be at least 8 characters long';
+      return;
+    }
+  } else {
+    // Sign in validation
+    if (!emailTrimmed || !passwordTrimmed) {
       error.value = 'Please fill in email and password';
-      loading.value = false;
       return;
     }
-    
-    const body = isSignUp
-      ? { 
-          email: email.value.trim(), 
-          password: password.value, 
-          name: name.value.trim() 
-        }
-      : { 
-          email: email.value.trim(), 
-          password: password.value 
-        };
+  }
 
-    console.log('Sending request:', { endpoint, body: { ...body, password: '***' } });
+  let result;
+  if (isSignUp.value) {
+    result = await signup(emailTrimmed, passwordTrimmed, nameTrimmed);
+  } else {
+    result = await login(emailTrimmed, passwordTrimmed);
+  }
 
-    const url = `${API_BASE}${endpoint}`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    }).catch((fetchError) => {
-      throw handleNetworkError(fetchError, url);
-    });
-
-    let data;
-    try {
-      data = await safeJsonParse(response);
-    } catch (parseError) {
-      // safeJsonParse already handles the error, just rethrow
-      throw parseError;
-    }
-
-    if (!response.ok) {
-      throw new Error(data.error || data.message || `Failed to ${isSignUp ? 'sign up' : 'sign in'}`);
-    }
-
-    if (!data.success) {
-      throw new Error(data.error || `Failed to ${isSignUp ? 'sign up' : 'sign in'}`);
-    }
-
-    if (isSignUp) {
+  if (result.success) {
+    if (isSignUp.value) {
       success.value = 'Account created successfully! You can now sign in.';
-      emit('signed-up', data.user);
+      emit('signed-up', result.user);
       // Switch to sign in after successful sign up
       setTimeout(() => {
         isSignUp.value = false;
         success.value = '';
       }, 2000);
     } else {
-      // Store token if provided
-      if (data.token) {
-        localStorage.setItem('authToken', data.token);
-      }
-      if (data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-      }
-      emit('signed-in', data.user);
+      emit('signed-in', result.user);
     }
 
     // Reset form
     email.value = '';
     password.value = '';
     name.value = '';
-  } catch (err) {
-    console.error('Sign in error:', err);
-    error.value = err.message || 'An unexpected error occurred. Please try again.';
-  } finally {
-    loading.value = false;
+  } else {
+    error.value = result.error || 'An unexpected error occurred. Please try again.';
   }
 };
 </script>

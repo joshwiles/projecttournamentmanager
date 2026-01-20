@@ -88,14 +88,37 @@ Frontend will be available at: http://localhost:5173
 ## 📋 Available Scripts
 
 ### Frontend
-- `npm run dev` - Start development server
+- `npm run dev` - Start development server (http://localhost:5173)
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 
 ### Backend
-- `npm run dev` - Start development server with nodemon
+- `npm run dev` - Start development server with nodemon (http://localhost:3000)
 - `npm start` - Start production server
 - `npm test` - Run tests
+
+## 🔐 Authentication
+
+The app includes a complete authentication system:
+
+- **Sign Up**: Create new accounts
+- **Sign In**: Login with email/password
+- **Session Management**: Secure cookie-based sessions
+- **Protected Routes**: Require authentication
+
+### Quick Setup
+
+1. **Backend**: Set `SESSION_SECRET` in `.env`:
+   ```bash
+   cd backend
+   cp env.example .env
+   # Generate secret: openssl rand -base64 32
+   # Add to .env: SESSION_SECRET=your-secret
+   ```
+
+2. **Frontend**: Already configured to use session cookies
+
+See [backend/AUTH_SETUP.md](backend/AUTH_SETUP.md) for detailed documentation.
 
 ## 🔧 API Endpoints
 

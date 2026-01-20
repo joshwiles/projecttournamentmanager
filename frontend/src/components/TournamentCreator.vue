@@ -111,6 +111,7 @@ const createTournament = async () => {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify({
         name: tournamentName.value,
         tournamentType: tournamentType.value,
