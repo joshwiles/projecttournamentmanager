@@ -75,6 +75,7 @@
 import { ref, onMounted } from 'vue';
 import TournamentCreator from './TournamentCreator.vue';
 import { API_BASE } from '../config/api.js';
+import { safeJsonParse } from '../utils/apiHelpers.js';
 
 const emit = defineEmits(['tournament-selected']);
 
@@ -111,7 +112,7 @@ const loadTournaments = async () => {
 
   try {
     const response = await fetch(`${API_BASE}/tournaments`);
-    const data = await response.json();
+    const data = await safeJsonParse(response);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to load tournaments');
@@ -119,7 +120,8 @@ const loadTournaments = async () => {
 
     tournaments.value = data.tournaments || [];
   } catch (err) {
-    error.value = err.message;
+    console.error('Error loading tournaments:', err);
+    error.value = err.message || 'Failed to load tournaments. Please check your API configuration.';
   } finally {
     loading.value = false;
   }

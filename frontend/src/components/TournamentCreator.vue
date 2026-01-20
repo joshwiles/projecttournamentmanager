@@ -79,6 +79,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { API_BASE } from '../config/api.js';
+import { safeJsonParse } from '../utils/apiHelpers.js';
 
 const emit = defineEmits(['tournament-created']);
 
@@ -116,7 +117,7 @@ const createTournament = async () => {
       }),
     });
 
-    const data = await response.json();
+    const data = await safeJsonParse(response);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to create tournament');

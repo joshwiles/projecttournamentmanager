@@ -103,6 +103,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { API_BASE } from '../config/api.js';
+import { safeJsonParse } from '../utils/apiHelpers.js';
 
 const props = defineProps({
   round: {
@@ -162,7 +163,7 @@ const updateResult = async (pairing, pairingIndex) => {
       }
     );
 
-    const data = await response.json();
+    const data = await safeJsonParse(response);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to update result');
@@ -189,7 +190,7 @@ const completeRound = async () => {
       }
     );
 
-    const data = await response.json();
+    const data = await safeJsonParse(response);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to complete round');
