@@ -140,9 +140,25 @@ import { useAuth } from '../composables/useAuth.js';
 
 const emit = defineEmits(['close', 'signed-in', 'signed-up']);
 
-const { signup, login, loading, error: authError } = useAuth();
+const props = defineProps({
+  initialMode: {
+    type: String,
+    default: 'signin', // 'signin' or 'signup'
+    validator: (value) => ['signin', 'signup'].includes(value)
+  }
+});
 
-const isSignUp = ref(false);
+const { signup, login, loading: authLoading, error: authError } = useAuth();
+
+// Local loading state to prevent conflicts
+const loading = ref(false);
+
+const isSignUp = ref(props.initialMode === 'signup');
+
+// Watch for prop changes
+watch(() => props.initialMode, (newMode) => {
+  isSignUp.value = newMode === 'signup';
+});
 const email = ref('');
 const password = ref('');
 const name = ref('');
@@ -165,59 +181,81 @@ watch(authError, (newError) => {
 const handleSubmit = async () => {
   error.value = '';
   success.value = '';
+  loading.value = true;
 
-  // Trim values for validation
-  const emailTrimmed = email.value.trim();
-  const passwordTrimmed = password.value.trim();
-  const nameTrimmed = name.value.trim();
+  try {
+    // Trim values for validation
+    const emailTrimmed = email.value.trim();
+    const passwordTrimmed = password.value.trim();
+    const nameTrimmed = name.value.trim();
 
-  // Validate required fields
-  if (isSignUp.value) {
-    // Sign up validation
-    if (!emailTrimmed || !passwordTrimmed || !nameTrimmed) {
-      error.value = 'Please fill in all fields';
-      return;
-    }
-    
-    // Validate password length for signup
-    if (passwordTrimmed.length < 8) {
-      error.value = 'Password must be at least 8 characters long';
-      return;
-    }
-  } else {
-    // Sign in validation
-    if (!emailTrimmed || !passwordTrimmed) {
-      error.value = 'Please fill in email and password';
-      return;
-    }
-  }
-
-  let result;
-  if (isSignUp.value) {
-    result = await signup(emailTrimmed, passwordTrimmed, nameTrimmed);
-  } else {
-    result = await login(emailTrimmed, passwordTrimmed);
-  }
-
-  if (result.success) {
+    // Validate required fields
     if (isSignUp.value) {
-      success.value = 'Account created successfully! You can now sign in.';
-      emit('signed-up', result.user);
-      // Switch to sign in after successful sign up
-      setTimeout(() => {
-        isSignUp.value = false;
-        success.value = '';
-      }, 2000);
+      // Sign up validation
+      if (!emailTrimmed || !passwordTrimmed || !nameTrimmed) {
+        error.value = 'Please fill in all fields';
+        loading.value = false;
+        return;
+      }
+      
+      // Validate password length for signup
+      if (passwordTrimmed.length < 8) {
+        error.value = 'Password must be at least 8 characters long';
+        loading.value = false;
+        return;
+      }
     } else {
-      emit('signed-in', result.user);
+      // Sign in validation
+      if (!emailTrimmed || !passwordTrimmed) {
+        error.value = 'Please fill in email and password';
+        loading.value = false;
+        return;
+      }
     }
 
-    // Reset form
-    email.value = '';
-    password.value = '';
-    name.value = '';
-  } else {
-    error.value = result.error || 'An unexpected error occurred. Please try again.';
+    let result;
+    if (isSignUp.value) {
+      result = await signup(emailTrimmed, passwordTrimmed, nameTrimmed);
+    } else {
+      result = await login(emailTrimmed, passwordTrimmed);
+    }
+
+    if (result.success) {
+      // Clear any errors on success
+      error.value = '';
+      
+      if (isSignUp.value) {
+        success.value = 'Account created successfully! You can now sign in.';
+        emit('signed-up', result.user);
+        // Switch to sign in after successful sign up
+        setTimeout(() => {
+          isSignUp.value = false;
+          success.value = '';
+        }, 2000);
+      } else {
+        // Reset form immediately
+        email.value = '';
+        password.value = '';
+        name.value = '';
+        
+        console.log('✅ Login successful, emitting signed-in event with user:', result.user);
+        
+        // Emit signed-in event immediately - App.vue will handle redirect
+        emit('signed-in', result.user);
+        
+        console.log('📤 signed-in event emitted');
+      }
+    } else {
+      // Display error message - ensure it's always shown
+      const errorMessage = result.error || 'An unexpected error occurred. Please try again.';
+      error.value = errorMessage;
+      console.error('Auth error:', errorMessage);
+    }
+  } catch (err) {
+    console.error('Unexpected error in handleSubmit:', err);
+    error.value = 'An unexpected error occurred. Please try again.';
+  } finally {
+    loading.value = false;
   }
 };
 </script>
