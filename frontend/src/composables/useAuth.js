@@ -75,32 +75,17 @@ export function useAuth() {
         throw handleNetworkError(fetchError, url);
       });
 
-      // Parse response (handles both JSON and non-JSON)
-      let data;
-      try {
-        data = await safeJsonParse(response);
-      } catch (parseError) {
-        const errorMsg = parseError.message || 'Failed to create account';
-        error.value = errorMsg;
-        return { success: false, error: errorMsg };
-      }
+      const data = await safeJsonParse(response);
 
-      // Check if request failed
       if (!response.ok || !data.success) {
-        const errorMsg = data.error || 'Failed to create account';
-        error.value = errorMsg;
-        return { success: false, error: errorMsg };
+        throw new Error(data.error || 'Failed to create account');
       }
 
-      // Success - set user and return
       user.value = data.user;
-      error.value = ''; // Clear any previous errors
       return { success: true, user: data.user };
     } catch (err) {
-      // Handle any other errors
-      const errorMsg = err.message || 'Failed to create account';
-      error.value = errorMsg;
-      return { success: false, error: errorMsg };
+      error.value = err.message || 'Failed to create account';
+      return { success: false, error: error.value };
     } finally {
       loading.value = false;
     }
@@ -126,35 +111,17 @@ export function useAuth() {
         throw handleNetworkError(fetchError, url);
       });
 
-      // Parse response (handles both JSON and non-JSON)
-      let data;
-      try {
-        data = await safeJsonParse(response);
-      } catch (parseError) {
-        // If parsing fails, create a user-friendly error
-        const errorMsg = response.status === 401 
-          ? 'Invalid email or password'
-          : parseError.message || 'Failed to sign in';
-        error.value = errorMsg;
-        return { success: false, error: errorMsg };
-      }
+      const data = await safeJsonParse(response);
 
-      // Check if request failed
       if (!response.ok || !data.success) {
-        const errorMsg = data.error || (response.status === 401 ? 'Invalid email or password' : 'Failed to sign in');
-        error.value = errorMsg;
-        return { success: false, error: errorMsg };
+        throw new Error(data.error || 'Failed to sign in');
       }
 
-      // Success - set user and return
       user.value = data.user;
-      error.value = ''; // Clear any previous errors
       return { success: true, user: data.user };
     } catch (err) {
-      // Handle any other errors
-      const errorMsg = err.message || 'Failed to sign in';
-      error.value = errorMsg;
-      return { success: false, error: errorMsg };
+      error.value = err.message || 'Failed to sign in';
+      return { success: false, error: error.value };
     } finally {
       loading.value = false;
     }
