@@ -7,7 +7,7 @@ import TournamentCreator from './components/TournamentCreator.vue';
 import SignIn from './components/SignIn.vue';
 import { useAuth } from './composables/useAuth.js';
 
-const { user, loading: authLoading, loadUser, logout: authLogout, isAuthenticated } = useAuth();
+const { user, initialCheckDone, loadUser, logout: authLogout, isAuthenticated } = useAuth();
 
 const currentView = ref('dashboard'); // 'dashboard', 'list', 'tournament', 'signin'
 const selectedTournamentId = ref(null);
@@ -70,11 +70,6 @@ const handleSignedIn = async (signedInUser) => {
   showSignIn.value = false;
   currentView.value = 'dashboard';
   mobileMenuOpen.value = false;
-};
-
-const handleSignedUp = (signedUpUser) => {
-  // User signed up, they'll be prompted to sign in
-  // User is already set by useAuth composable
 };
 
 const handleLogout = async () => {
@@ -197,8 +192,8 @@ onMounted(async () => {
 
     <!-- Main Content -->
     <main class="flex-1 container mx-auto px-4 py-4 md:px-6 md:py-6 lg:px-8 lg:py-8">
-      <!-- Show loading spinner while checking auth -->
-      <div v-if="authLoading" class="flex items-center justify-center min-h-[60vh]">
+      <!-- Show loading spinner while initial auth check runs -->
+      <div v-if="!initialCheckDone" class="flex items-center justify-center min-h-[60vh]">
         <div class="text-center">
           <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"></div>
           <p class="text-gray-400">Loading...</p>
@@ -211,7 +206,6 @@ onMounted(async () => {
           v-if="currentView === 'signin'"
           @close="handleCloseSignIn"
           @signed-in="handleSignedIn"
-          @signed-up="handleSignedUp"
         />
         <Dashboard
           v-else-if="currentView === 'dashboard' && !showCreator"

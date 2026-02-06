@@ -9,7 +9,8 @@ import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 
 // Shared state (singleton)
 const user = ref(null);
-const loading = ref(true);
+const loading = ref(false);
+const initialCheckDone = ref(false);
 const error = ref('');
 
 /**
@@ -52,6 +53,7 @@ export function useAuth() {
       // Don't set error for auth check failures
     } finally {
       loading.value = false;
+      initialCheckDone.value = true;
     }
   };
 
@@ -162,6 +164,7 @@ export function useAuth() {
   return {
     user,
     loading,
+    initialCheckDone,
     error,
     isAuthenticated,
     loadUser,
