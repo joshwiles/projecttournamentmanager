@@ -577,7 +577,11 @@ router.get('/:id/standings', (req, res) => {
     });
   }
 
-  const standings = SwissPairing.calculateStandings(tournament);
+  const tournamentType = tournament.tournamentType || 'swiss';
+  const isRoundRobin = tournamentType === 'round_robin' || tournamentType === 'double_round_robin';
+  const standings = isRoundRobin
+    ? RoundRobinPairing.calculateStandings(tournament)
+    : SwissPairing.calculateStandings(tournament);
 
   res.json({
     success: true,

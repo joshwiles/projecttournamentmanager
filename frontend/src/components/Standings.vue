@@ -16,7 +16,7 @@
     </div>
 
     <!-- Mobile Card Layout -->
-    <div v-else class="block md:hidden space-y-3">
+    <div v-else-if="standings.length > 0" class="block md:hidden space-y-3">
       <div
         v-for="player in standings"
         :key="player.id"
@@ -96,7 +96,7 @@
     </div>
 
     <!-- Desktop Table Layout -->
-    <div v-else class="hidden md:block overflow-x-auto">
+    <div v-if="standings.length > 0" class="hidden md:block overflow-x-auto">
       <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
@@ -127,75 +127,78 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr
+          <template
             v-for="player in standings"
             :key="player.id"
-            class="hover:bg-gray-50 transition-colors"
-            :class="{
-              'bg-yellow-50': player.rank === 1,
-              'bg-gray-50': player.rank === 2,
-              'bg-orange-50': player.rank === 3,
-            }"
           >
-            <td class="px-4 py-3 whitespace-nowrap">
-              <span
-                class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold"
-                :class="{
-                  'bg-yellow-400 text-yellow-900': player.rank === 1,
-                  'bg-gray-300 text-gray-900': player.rank === 2,
-                  'bg-orange-300 text-orange-900': player.rank === 3,
-                  'bg-gray-200 text-gray-700': player.rank > 3,
-                }"
-              >
-                {{ player.rank }}
-              </span>
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap font-medium text-gray-900">
-              {{ player.name }}
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600">
-              <span v-if="player.rating">{{ player.rating }}</span>
-              <span v-else class="text-gray-400 italic text-xs">unrated</span>
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap text-center font-bold text-lg">
-              {{ player.score }}
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600">
-              {{ player.wins }}
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600">
-              {{ player.draws }}
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600">
-              {{ player.losses }}
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600">
-              {{ player.gamesPlayed }}
-            </td>
-          </tr>
-          <!-- Game History Row (Desktop) -->
-          <tr
-            v-if="showGameHistory && tournament && getPlayerGames(player.id).length > 0"
-            :key="`history-${player.id}`"
-            class="bg-gray-50"
-          >
-            <td colspan="8" class="px-4 py-3">
-              <div class="text-sm">
-                <div class="font-semibold mb-2 text-gray-700">Game History:</div>
-                <div class="flex flex-wrap gap-2">
-                  <span
-                    v-for="(game, index) in getPlayerGames(player.id)"
-                    :key="index"
-                    class="px-2 py-1 rounded text-xs"
-                    :class="getGameResultClass(game, player.id)"
-                  >
-                    R{{ game.round }}: {{ getGameOpponent(game, player.id) }}
-                    <span class="font-semibold">{{ getGameResult(game, player.id) }}</span>
-                  </span>
+            <tr
+              class="hover:bg-gray-50 transition-colors"
+              :class="{
+                'bg-yellow-50': player.rank === 1,
+                'bg-gray-50': player.rank === 2,
+                'bg-orange-50': player.rank === 3,
+              }"
+            >
+              <td class="px-4 py-3 whitespace-nowrap">
+                <span
+                  class="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold"
+                  :class="{
+                    'bg-yellow-400 text-yellow-900': player.rank === 1,
+                    'bg-gray-300 text-gray-900': player.rank === 2,
+                    'bg-orange-300 text-orange-900': player.rank === 3,
+                    'bg-gray-200 text-gray-700': player.rank > 3,
+                  }"
+                >
+                  {{ player.rank }}
+                </span>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap font-medium text-gray-900">
+                {{ player.name }}
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600">
+                <span v-if="player.rating">{{ player.rating }}</span>
+                <span v-else class="text-gray-400 italic text-xs">unrated</span>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap text-center font-bold text-lg">
+                {{ player.score }}
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600">
+                {{ player.wins }}
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600">
+                {{ player.draws }}
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600">
+                {{ player.losses }}
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap text-center text-gray-600">
+                {{ player.gamesPlayed }}
+              </td>
+            </tr>
+            <!-- Game History Row (Desktop) -->
+            <tr
+              v-if="showGameHistory && tournament && getPlayerGames(player.id).length > 0"
+              :key="`history-${player.id}`"
+              class="bg-gray-50"
+            >
+              <td colspan="8" class="px-4 py-3">
+                <div class="text-sm">
+                  <div class="font-semibold mb-2 text-gray-700">Game History:</div>
+                  <div class="flex flex-wrap gap-2">
+                    <span
+                      v-for="(game, index) in getPlayerGames(player.id)"
+                      :key="index"
+                      class="px-2 py-1 rounded text-xs"
+                      :class="getGameResultClass(game, player.id)"
+                    >
+                      R{{ game.round }}: {{ getGameOpponent(game, player.id) }}
+                      <span class="font-semibold">{{ getGameResult(game, player.id) }}</span>
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </td>
-          </tr>
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </div>

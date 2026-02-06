@@ -81,11 +81,18 @@ import { ref, computed } from 'vue';
 import { API_BASE } from '../config/api.js';
 import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 
-const emit = defineEmits(['tournament-created']);
+const props = defineProps({
+  initialTournamentType: {
+    type: String,
+    default: 'swiss_fide_dutch',
+  },
+});
+
+const emit = defineEmits(['tournament-created', 'cancel']);
 
 const tournamentName = ref('');
-const tournamentType = ref('swiss_fide_dutch');
-const numberOfRounds = ref(5);
+const tournamentType = ref(props.initialTournamentType);
+const numberOfRounds = ref(tournamentType.value.startsWith('swiss') ? 5 : 0);
 const loading = ref(false);
 const error = ref('');
 

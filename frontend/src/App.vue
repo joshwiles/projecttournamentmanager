@@ -174,7 +174,7 @@ onMounted(async () => {
           </button>
           <button
             v-if="!currentUser"
-            @click="handleOpenSignIn; mobileMenuOpen = false"
+            @click="handleOpenSignIn()"
             class="w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left text-gray-300 active:bg-gray-700/60 min-h-[44px]"
           >
             Sign In

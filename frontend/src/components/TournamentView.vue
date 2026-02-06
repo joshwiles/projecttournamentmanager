@@ -102,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import PlayerManager from './PlayerManager.vue';
 import RoundPairings from './RoundPairings.vue';
 import Standings from './Standings.vue';
@@ -222,5 +222,12 @@ watch(
   },
   { immediate: true }
 );
+
+onUnmounted(() => {
+  if (pollInterval) {
+    clearInterval(pollInterval);
+    pollInterval = null;
+  }
+});
 </script>
 
