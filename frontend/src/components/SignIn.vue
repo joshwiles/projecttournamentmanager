@@ -96,16 +96,6 @@
             </div>
           </div>
 
-          <!-- Success Message -->
-          <div v-if="success" class="bg-gradient-to-r from-green-900/30 to-emerald-900/30 border-l-4 border-green-500 text-green-300 px-5 py-4 rounded-xl">
-            <div class="flex items-center gap-3">
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span class="font-medium">{{ success }}</span>
-            </div>
-          </div>
-
           <!-- Submit Button -->
           <button
             type="submit"
@@ -138,7 +128,7 @@
 import { ref, watch } from 'vue';
 import { useAuth } from '../composables/useAuth.js';
 
-const emit = defineEmits(['close', 'signed-in', 'signed-up']);
+const emit = defineEmits(['close', 'signed-in']);
 
 const { signup, login, loading, error: authError } = useAuth();
 
@@ -147,12 +137,10 @@ const email = ref('');
 const password = ref('');
 const name = ref('');
 const error = ref('');
-const success = ref('');
 
-// Clear messages when switching between sign in/sign up
+// Clear error when switching between sign in/sign up
 watch(isSignUp, () => {
   error.value = '';
-  success.value = '';
 });
 
 // Watch for auth errors
@@ -164,29 +152,28 @@ watch(authError, (newError) => {
 
 const handleSubmit = async () => {
   error.value = '';
-  success.value = '';
 
-  // Trim values for validation
+  // Trim email and name, but never trim passwords (spaces can be intentional)
   const emailTrimmed = email.value.trim();
-  const passwordTrimmed = password.value.trim();
+  const passwordValue = password.value;
   const nameTrimmed = name.value.trim();
 
   // Validate required fields
   if (isSignUp.value) {
     // Sign up validation
-    if (!emailTrimmed || !passwordTrimmed || !nameTrimmed) {
+    if (!emailTrimmed || !passwordValue || !nameTrimmed) {
       error.value = 'Please fill in all fields';
       return;
     }
-    
+
     // Validate password length for signup
-    if (passwordTrimmed.length < 8) {
+    if (passwordValue.length < 8) {
       error.value = 'Password must be at least 8 characters long';
       return;
     }
   } else {
     // Sign in validation
-    if (!emailTrimmed || !passwordTrimmed) {
+    if (!emailTrimmed || !passwordValue) {
       error.value = 'Please fill in email and password';
       return;
     }
@@ -194,28 +181,19 @@ const handleSubmit = async () => {
 
   let result;
   if (isSignUp.value) {
-    result = await signup(emailTrimmed, passwordTrimmed, nameTrimmed);
+    result = await signup(emailTrimmed, passwordValue, nameTrimmed);
   } else {
-    result = await login(emailTrimmed, passwordTrimmed);
+    result = await login(emailTrimmed, passwordValue);
   }
 
   if (result.success) {
-    if (isSignUp.value) {
-      success.value = 'Account created successfully! You can now sign in.';
-      emit('signed-up', result.user);
-      // Switch to sign in after successful sign up
-      setTimeout(() => {
-        isSignUp.value = false;
-        success.value = '';
-      }, 2000);
-    } else {
-      emit('signed-in', result.user);
-    }
-
     // Reset form
     email.value = '';
     password.value = '';
     name.value = '';
+
+    // Both signup and login create a session, so emit signed-in for both
+    emit('signed-in', result.user);
   } else {
     error.value = result.error || 'An unexpected error occurred. Please try again.';
   }
