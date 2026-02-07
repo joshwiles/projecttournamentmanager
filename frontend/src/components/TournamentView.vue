@@ -45,12 +45,26 @@
               </div>
             </div>
           </div>
-          <button
-            @click="$emit('close-tournament')"
-            class="w-full sm:w-auto text-gray-500 active:text-gray-700 hover:text-gray-700 px-4 py-2 rounded-md active:bg-gray-100 min-h-[44px] text-left sm:text-center font-medium"
-          >
-            ← Back to Tournaments
-          </button>
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div v-if="isAuthenticated" class="flex items-center gap-2">
+              <button
+                @click="saveTournament()"
+                :disabled="saving"
+                class="w-full sm:w-auto px-4 py-2 rounded-md min-h-[44px] font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {{ saving ? 'Saving...' : (savedId || tournament?._savedId ? 'Update Save' : 'Save Tournament') }}
+              </button>
+              <span v-if="saveMessage" class="text-sm font-medium" :class="saveMessage.startsWith('Save failed') ? 'text-red-600' : 'text-green-600'">
+                {{ saveMessage }}
+              </span>
+            </div>
+            <button
+              @click="$emit('close-tournament')"
+              class="w-full sm:w-auto text-gray-500 active:text-gray-700 hover:text-gray-700 px-4 py-2 rounded-md active:bg-gray-100 min-h-[44px] text-left sm:text-center font-medium"
+            >
+              ← Back to Tournaments
+            </button>
+          </div>
         </div>
       </div>
 
@@ -109,11 +123,18 @@ import Standings from './Standings.vue';
 import GameResults from './GameResults.vue';
 import { API_BASE } from '../config/api.js';
 import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
+import { useAuth } from '../composables/useAuth.js';
+
+const { isAuthenticated } = useAuth();
 
 const props = defineProps({
   tournamentId: {
     type: Number,
     required: true,
+  },
+  initialSavedId: {
+    type: Number,
+    default: null,
   },
 });
 
@@ -123,6 +144,9 @@ const tournament = ref(null);
 const standings = ref([]);
 const loading = ref(true);
 const error = ref('');
+const savedId = ref(props.initialSavedId);
+const saving = ref(false);
+const saveMessage = ref('');
 
 const statusLabel = computed(() => {
   if (!tournament.value) return '';
@@ -197,6 +221,43 @@ const handleRoundCompleted = (data) => {
     standings.value = data.standings;
   }
   loadTournament();
+};
+
+const saveTournament = async () => {
+  if (!tournament.value || saving.value) return;
+  saving.value = true;
+  saveMessage.value = '';
+
+  try {
+    // Check if the tournament has a _savedId from loading
+    const effectiveSavedId = savedId.value || tournament.value._savedId;
+    const isUpdate = !!effectiveSavedId;
+    const url = isUpdate
+      ? `${API_BASE}/saved-tournaments/${effectiveSavedId}`
+      : `${API_BASE}/saved-tournaments`;
+    const method = isUpdate ? 'PUT' : 'POST';
+
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ tournament: tournament.value }),
+    });
+    const data = await safeJsonParse(response);
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to save tournament');
+    }
+
+    savedId.value = data.savedTournament.id;
+    saveMessage.value = 'Saved!';
+    setTimeout(() => { saveMessage.value = ''; }, 2000);
+  } catch (err) {
+    saveMessage.value = 'Save failed: ' + err.message;
+    setTimeout(() => { saveMessage.value = ''; }, 4000);
+  } finally {
+    saving.value = false;
+  }
 };
 
 onMounted(() => {

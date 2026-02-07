@@ -63,6 +63,8 @@ async function initializeDatabase() {
   let createUsersTable;
   let createIndex;
   let createSessionsTable;
+  let createSavedTournamentsTable;
+  let createSavedTournamentsIndex;
 
   if (db.type === 'postgres') {
     createUsersTable = `
@@ -76,7 +78,23 @@ async function initializeDatabase() {
       )
     `;
     createIndex = `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`;
-    
+    createSavedTournamentsTable = `
+      CREATE TABLE IF NOT EXISTS saved_tournaments (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        name TEXT NOT NULL,
+        tournament_type TEXT NOT NULL DEFAULT 'swiss',
+        status TEXT NOT NULL DEFAULT 'registration',
+        player_count INTEGER NOT NULL DEFAULT 0,
+        current_round INTEGER NOT NULL DEFAULT 0,
+        number_of_rounds INTEGER NOT NULL DEFAULT 0,
+        tournament_data JSONB NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    createSavedTournamentsIndex = `CREATE INDEX IF NOT EXISTS idx_saved_tournaments_user_id ON saved_tournaments(user_id)`;
+
     // Session table for connect-pg-simple (will be auto-created by connect-pg-simple with createTableIfMissing: true)
     // No need to create manually
   } else {
@@ -91,16 +109,36 @@ async function initializeDatabase() {
       )
     `;
     createIndex = `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`;
+    createSavedTournamentsTable = `
+      CREATE TABLE IF NOT EXISTS saved_tournaments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        name TEXT NOT NULL,
+        tournament_type TEXT NOT NULL DEFAULT 'swiss',
+        status TEXT NOT NULL DEFAULT 'registration',
+        player_count INTEGER NOT NULL DEFAULT 0,
+        current_round INTEGER NOT NULL DEFAULT 0,
+        number_of_rounds INTEGER NOT NULL DEFAULT 0,
+        tournament_data TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    createSavedTournamentsIndex = `CREATE INDEX IF NOT EXISTS idx_saved_tournaments_user_id ON saved_tournaments(user_id)`;
   }
 
   try {
     if (db.type === 'sqlite' && db.raw) {
       db.raw.exec(createUsersTable);
       db.raw.exec(createIndex);
+      db.raw.exec(createSavedTournamentsTable);
+      db.raw.exec(createSavedTournamentsIndex);
       console.log('✅ Database schema initialized');
     } else {
       await db.query(createUsersTable);
       await db.query(createIndex);
+      await db.query(createSavedTournamentsTable);
+      await db.query(createSavedTournamentsIndex);
       if (createSessionsTable) {
         try {
           await db.query(createSessionsTable);

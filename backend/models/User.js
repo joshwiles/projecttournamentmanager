@@ -96,6 +96,73 @@ class User {
   }
 
   /**
+   * Update user profile (name and/or email)
+   */
+  static async updateProfile(id, { name, email }) {
+    const dbType = getDbType();
+    const updates = [];
+    const values = [];
+
+    if (name !== undefined) {
+      updates.push('name');
+      values.push(name.trim());
+    }
+    if (email !== undefined) {
+      updates.push('email');
+      values.push(email.toLowerCase().trim());
+    }
+    if (updates.length === 0) return User.findById(id);
+
+    try {
+      if (dbType === 'sqlite' && db.raw) {
+        const setClauses = updates.map(col => `${col} = ?`).join(', ');
+        const stmt = db.raw.prepare(`UPDATE users SET ${setClauses}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`);
+        stmt.run(...values, id);
+        return User.findById(id);
+      } else {
+        const setClauses = updates.map((col, i) => `${col} = $${i + 1}`).join(', ');
+        const query = `UPDATE users SET ${setClauses}, updated_at = NOW() WHERE id = $${updates.length + 1} RETURNING id, email, name, created_at, updated_at`;
+        const result = await db.query(query, [...values, id]);
+        return result.rows[0] || null;
+      }
+    } catch (error) {
+      if (error.code === '23505' || (error.message && error.message.includes('UNIQUE'))) {
+        throw new Error('Email already in use');
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Update user password
+   */
+  static async updatePassword(id, newPasswordHash) {
+    const dbType = getDbType();
+
+    if (dbType === 'sqlite' && db.raw) {
+      const stmt = db.raw.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+      stmt.run(newPasswordHash, id);
+    } else {
+      await db.query('UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2', [newPasswordHash, id]);
+    }
+  }
+
+  /**
+   * Find user by ID with password hash (for password verification)
+   */
+  static async findByIdWithHash(id) {
+    const dbType = getDbType();
+
+    if (dbType === 'sqlite' && db.raw) {
+      const stmt = db.raw.prepare('SELECT * FROM users WHERE id = ?');
+      return stmt.get(id) || null;
+    } else {
+      const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+      return result.rows[0] || null;
+    }
+  }
+
+  /**
    * Get user without sensitive data
    */
   static toSafeUser(user) {

@@ -106,6 +106,7 @@ router.post('/', (req, res) => {
     name,
     tournamentType: type,
     numberOfRounds: rounds,
+    playerIdCounter: 0,
     players: [],
     rounds: [],
     currentRound: 0,
@@ -173,7 +174,7 @@ router.post('/:id/players', (req, res) => {
   }
 
   const player = {
-    id: Date.now() + Math.random(), // Simple ID generation
+    id: ++tournament.playerIdCounter,
     name: name.trim(),
     rating: playerRating, // null for unrated players
   };
@@ -586,6 +587,35 @@ router.get('/:id/standings', (req, res) => {
   res.json({
     success: true,
     standings,
+  });
+});
+
+/**
+ * POST /api/tournaments/load
+ * Load a saved tournament into memory
+ */
+router.post('/load', (req, res) => {
+  const { tournamentData, savedId } = req.body;
+
+  if (!tournamentData) {
+    return res.status(400).json({
+      success: false,
+      error: 'Tournament data is required',
+    });
+  }
+
+  // Assign a new in-memory ID
+  const tournament = {
+    ...tournamentData,
+    id: tournamentIdCounter++,
+    _savedId: savedId || null,
+  };
+
+  tournaments.push(tournament);
+
+  res.status(201).json({
+    success: true,
+    tournament,
   });
 });
 

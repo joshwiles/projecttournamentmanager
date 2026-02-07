@@ -5,12 +5,17 @@ import TournamentList from './components/TournamentList.vue';
 import TournamentView from './components/TournamentView.vue';
 import TournamentCreator from './components/TournamentCreator.vue';
 import SignIn from './components/SignIn.vue';
+import MyTournaments from './components/MyTournaments.vue';
+import ProfileDropdown from './components/ProfileDropdown.vue';
+import Account from './components/Account.vue';
+import Settings from './components/Settings.vue';
 import { useAuth } from './composables/useAuth.js';
 
 const { user, initialCheckDone, loadUser, logout: authLogout, isAuthenticated } = useAuth();
 
-const currentView = ref('dashboard'); // 'dashboard', 'list', 'tournament', 'signin'
+const currentView = ref('dashboard'); // 'dashboard', 'list', 'tournament', 'signin', 'my-tournaments', 'account', 'settings'
 const selectedTournamentId = ref(null);
+const selectedSavedId = ref(null);
 const showSignIn = ref(false);
 
 // Computed property for current user
@@ -18,6 +23,7 @@ const currentUser = computed(() => user.value);
 
 const handleTournamentSelected = (tournamentId) => {
   selectedTournamentId.value = tournamentId;
+  selectedSavedId.value = null;
   currentView.value = 'tournament';
   mobileMenuOpen.value = false;
 };
@@ -78,6 +84,36 @@ const handleLogout = async () => {
   mobileMenuOpen.value = false;
 };
 
+const handleProfileNavigate = (view) => {
+  currentView.value = view;
+  selectedTournamentId.value = null;
+  showCreator.value = false;
+  mobileMenuOpen.value = false;
+};
+
+const handleOpenAccount = () => {
+  currentView.value = 'account';
+  mobileMenuOpen.value = false;
+};
+
+const handleOpenSettings = () => {
+  currentView.value = 'settings';
+  mobileMenuOpen.value = false;
+};
+
+const handleOpenMyTournaments = () => {
+  currentView.value = 'my-tournaments';
+  selectedTournamentId.value = null;
+  showCreator.value = false;
+  mobileMenuOpen.value = false;
+};
+
+const handleLoadSavedTournament = ({ tournamentId, savedId }) => {
+  selectedTournamentId.value = tournamentId;
+  selectedSavedId.value = savedId;
+  currentView.value = 'tournament';
+};
+
 // Load user on app start
 onMounted(async () => {
   await loadUser();
@@ -135,19 +171,11 @@ onMounted(async () => {
             >
               Sign In
             </button>
-            <div
+            <ProfileDropdown
               v-else
-              class="px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-semibold text-gray-300 flex items-center gap-2 min-h-[44px]"
-            >
-              <span class="hidden lg:inline">{{ currentUser?.name || 'User' }}</span>
-              <span class="lg:hidden">{{ currentUser?.name?.split(' ')[0] || 'User' }}</span>
-              <button
-                @click="handleLogout"
-                class="text-gray-400 active:text-gray-200 transition-colors text-sm min-h-[44px] px-2"
-              >
-                Sign Out
-              </button>
-            </div>
+              @navigate="handleProfileNavigate"
+              @sign-out="handleLogout"
+            />
           </nav>
         </div>
 
@@ -167,25 +195,54 @@ onMounted(async () => {
           >
             Tournaments
           </button>
+          <template v-if="currentUser">
+            <button
+              @click="handleOpenAccount()"
+              :class="[
+                'w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left min-h-[44px]',
+                currentView === 'account'
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                  : 'text-gray-300 active:bg-gray-700/60'
+              ]"
+            >
+              Account
+            </button>
+            <button
+              @click="handleOpenMyTournaments()"
+              :class="[
+                'w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left min-h-[44px]',
+                currentView === 'my-tournaments'
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                  : 'text-gray-300 active:bg-gray-700/60'
+              ]"
+            >
+              My Tournaments
+            </button>
+            <button
+              @click="handleOpenSettings()"
+              :class="[
+                'w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left min-h-[44px]',
+                currentView === 'settings'
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                  : 'text-gray-300 active:bg-gray-700/60'
+              ]"
+            >
+              Settings
+            </button>
+            <button
+              @click="handleLogout"
+              class="w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left text-gray-400 active:bg-gray-700/60 min-h-[44px]"
+            >
+              Sign Out
+            </button>
+          </template>
           <button
-            v-if="!currentUser"
+            v-else
             @click="handleOpenSignIn()"
             class="w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left text-gray-300 active:bg-gray-700/60 min-h-[44px]"
           >
             Sign In
           </button>
-          <div
-            v-else
-            class="px-4 py-3 rounded-xl text-gray-300 space-y-2"
-          >
-            <div class="font-semibold">{{ currentUser?.name || 'User' }}</div>
-            <button
-              @click="handleLogout"
-              class="w-full text-left text-gray-400 active:text-gray-200 transition-colors text-sm min-h-[44px] px-2"
-            >
-              Sign Out
-            </button>
-          </div>
         </div>
       </div>
     </header>
@@ -221,9 +278,22 @@ onMounted(async () => {
           v-else-if="currentView === 'list' && !selectedTournamentId"
           @tournament-selected="handleTournamentSelected"
         />
+        <Account
+          v-else-if="currentView === 'account'"
+          @back="handleNavigateToDashboard"
+        />
+        <Settings
+          v-else-if="currentView === 'settings'"
+          @back="handleNavigateToDashboard"
+        />
+        <MyTournaments
+          v-else-if="currentView === 'my-tournaments'"
+          @load-tournament="handleLoadSavedTournament"
+        />
         <TournamentView
           v-else-if="currentView === 'tournament' && selectedTournamentId"
           :tournament-id="selectedTournamentId"
+          :initial-saved-id="selectedSavedId"
           @close-tournament="handleCloseTournament"
         />
       </template>

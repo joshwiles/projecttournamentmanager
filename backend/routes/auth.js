@@ -240,4 +240,82 @@ router.get('/me', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * PUT /api/auth/profile
+ * Update user profile (name and/or email)
+ */
+router.put('/profile', requireAuth, async (req, res) => {
+  try {
+    const { name, email } = req.body;
+
+    if (!name && !email) {
+      return res.status(400).json({ success: false, error: 'Name or email is required' });
+    }
+
+    if (email && !validateEmail(email)) {
+      return res.status(400).json({ success: false, error: 'Invalid email format' });
+    }
+
+    if (name !== undefined && name.trim().length < 1) {
+      return res.status(400).json({ success: false, error: 'Name is required' });
+    }
+
+    const updatedUser = await User.updateProfile(req.session.userId, { name, email });
+
+    res.json({
+      success: true,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        created_at: updatedUser.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    if (error.message === 'Email already in use') {
+      return res.status(400).json({ success: false, error: 'Email already in use' });
+    }
+    res.status(500).json({ success: false, error: 'Failed to update profile' });
+  }
+});
+
+/**
+ * PUT /api/auth/password
+ * Change user password
+ */
+router.put('/password', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, error: 'Current and new passwords are required' });
+    }
+
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.valid) {
+      return res.status(400).json({ success: false, error: passwordValidation.error });
+    }
+
+    const user = await User.findByIdWithHash(req.session.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    const isValid = await User.verifyPassword(currentPassword, user.password_hash);
+    if (!isValid) {
+      return res.status(401).json({ success: false, error: 'Current password is incorrect' });
+    }
+
+    const bcrypt = require('bcryptjs');
+    const newHash = await bcrypt.hash(newPassword, 12);
+    await User.updatePassword(req.session.userId, newHash);
+
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Update password error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update password' });
+  }
+});
+
 module.exports = router;

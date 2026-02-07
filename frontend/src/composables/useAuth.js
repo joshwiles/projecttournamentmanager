@@ -161,6 +161,73 @@ export function useAuth() {
     }
   };
 
+  /**
+   * Update user profile (name and/or email)
+   */
+  const updateProfile = async (name, email) => {
+    loading.value = true;
+    error.value = '';
+
+    try {
+      const url = `${API_BASE}/auth/profile`;
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name, email }),
+      }).catch((fetchError) => {
+        throw handleNetworkError(fetchError, url);
+      });
+
+      const data = await safeJsonParse(response);
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to update profile');
+      }
+
+      user.value = data.user;
+      return { success: true, user: data.user };
+    } catch (err) {
+      error.value = err.message || 'Failed to update profile';
+      return { success: false, error: error.value };
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  /**
+   * Change user password
+   */
+  const updatePassword = async (currentPassword, newPassword) => {
+    loading.value = true;
+    error.value = '';
+
+    try {
+      const url = `${API_BASE}/auth/password`;
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ currentPassword, newPassword }),
+      }).catch((fetchError) => {
+        throw handleNetworkError(fetchError, url);
+      });
+
+      const data = await safeJsonParse(response);
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to change password');
+      }
+
+      return { success: true };
+    } catch (err) {
+      error.value = err.message || 'Failed to change password';
+      return { success: false, error: error.value };
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     user,
     loading,
@@ -171,5 +238,7 @@ export function useAuth() {
     signup,
     login,
     logout,
+    updateProfile,
+    updatePassword,
   };
 }

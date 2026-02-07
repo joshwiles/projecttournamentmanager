@@ -130,6 +130,7 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/tournaments', require('./routes/tournaments'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/saved-tournaments', require('./routes/savedTournaments'));
 
 // 404 handler for API routes
 app.use('*', (req, res) => {
