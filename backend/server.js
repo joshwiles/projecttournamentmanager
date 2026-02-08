@@ -10,6 +10,7 @@ require('dotenv').config();
 require('./db');
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Railway/Vercel) so secure cookies work behind reverse proxy
 const PORT = process.env.PORT || 3000;
 
 // Session secret validation
