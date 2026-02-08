@@ -102,7 +102,7 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: isProduction, // Only send over HTTPS in production
-    sameSite: isProduction ? 'none' : 'lax', // 'none' required for cross-site cookies (frontend/backend on different domains)
+    sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     domain: isProduction ? undefined : undefined // Let browser handle domain
   }
