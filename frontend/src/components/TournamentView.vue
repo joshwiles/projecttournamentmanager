@@ -58,11 +58,8 @@
                 {{ saveMessage }}
               </span>
             </div>
-            <p v-else class="text-sm text-gray-400 italic">
-              Log in to save tournament and access across devices
-            </p>
             <button
-              @click="$emit('close-tournament')"
+              @click="handleBack()"
               class="w-full sm:w-auto text-gray-500 active:text-gray-700 hover:text-gray-700 px-4 py-2 rounded-md active:bg-gray-100 min-h-[44px] text-left sm:text-center font-medium"
             >
               ← Back to Tournaments
@@ -77,9 +74,9 @@
         :tournament-id="tournament.id"
         :players="tournament.players"
         :tournament-status="tournament.status"
-        @player-added="loadTournament"
-        @player-removed="loadTournament"
-        @tournament-started="loadTournament"
+        @player-added="handlePlayerChange"
+        @player-removed="handlePlayerChange"
+        @tournament-started="handlePlayerChange"
         class="mb-4 md:mb-6"
       />
 
@@ -115,6 +112,37 @@
         <p class="mt-2">Congratulations to all participants!</p>
       </div>
     </div>
+
+    <!-- Login prompt modal -->
+    <div v-if="showLoginPrompt" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div v-if="!showInlineAuth" class="bg-gray-800 border border-gray-700 rounded-xl p-6 max-w-sm w-full">
+        <h3 class="text-lg font-semibold text-white mb-2">Tournament Not Saved</h3>
+        <p class="text-gray-400 mb-5">
+          {{ loginPromptReason === 'exit' ? 'If you leave now, this tournament will not be saved.' : 'Your completed tournament has not been saved.' }}
+          Sign in or sign up to save it permanently.
+        </p>
+        <div class="flex flex-col gap-2">
+          <button
+            @click="showInlineAuth = true"
+            class="w-full px-4 py-3 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 min-h-[44px] transition-colors"
+          >
+            Sign In / Sign Up
+          </button>
+          <button
+            @click="dismissLoginPrompt()"
+            class="w-full px-4 py-3 rounded-lg font-medium text-gray-400 hover:bg-gray-700 min-h-[44px] transition-colors"
+          >
+            {{ loginPromptReason === 'exit' ? 'Leave Without Saving' : 'Dismiss' }}
+          </button>
+        </div>
+      </div>
+      <div v-else class="w-full max-w-md">
+        <SignIn
+          @close="showInlineAuth = false"
+          @signed-in="handleModalSignedIn"
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -124,6 +152,7 @@ import PlayerManager from './PlayerManager.vue';
 import RoundPairings from './RoundPairings.vue';
 import Standings from './Standings.vue';
 import GameResults from './GameResults.vue';
+import SignIn from './SignIn.vue';
 import { API_BASE } from '../config/api.js';
 import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 import { useAuth } from '../composables/useAuth.js';
@@ -150,6 +179,9 @@ const error = ref('');
 const savedId = ref(props.initialSavedId);
 const saving = ref(false);
 const saveMessage = ref('');
+const showLoginPrompt = ref(false);
+const showInlineAuth = ref(false);
+const loginPromptReason = ref('exit'); // 'exit' or 'completed'
 
 const statusLabel = computed(() => {
   if (!tournament.value) return '';
@@ -201,11 +233,6 @@ const loadTournament = async (showLoading = true) => {
     tournament.value = data.tournament;
     standings.value = data.tournament.standings || [];
 
-    // Auto-save on first load if logged in and not already saved
-    if (isAuthenticated.value && !savedId.value && !tournament.value._savedId) {
-      saveTournament();
-    }
-
     // Restore scroll position after DOM update
     await nextTick();
     requestAnimationFrame(() => {
@@ -220,6 +247,13 @@ const loadTournament = async (showLoading = true) => {
   }
 };
 
+const handlePlayerChange = async () => {
+  await loadTournament();
+  if (isAuthenticated.value && (savedId.value || tournament.value?._savedId)) {
+    saveTournament();
+  }
+};
+
 const handleRoundCompleted = async (data) => {
   if (data.tournament) {
     tournament.value.status = data.tournament.status;
@@ -231,6 +265,35 @@ const handleRoundCompleted = async (data) => {
   await loadTournament();
   if (isAuthenticated.value && (savedId.value || tournament.value?._savedId)) {
     saveTournament();
+  } else if (!isAuthenticated.value && tournament.value?.status === 'completed') {
+    loginPromptReason.value = 'completed';
+    showLoginPrompt.value = true;
+  }
+};
+
+const handleBack = () => {
+  if (!isAuthenticated.value) {
+    loginPromptReason.value = 'exit';
+    showLoginPrompt.value = true;
+  } else {
+    emit('close-tournament');
+  }
+};
+
+const dismissLoginPrompt = () => {
+  showLoginPrompt.value = false;
+  showInlineAuth.value = false;
+  if (loginPromptReason.value === 'exit') {
+    emit('close-tournament');
+  }
+};
+
+const handleModalSignedIn = async () => {
+  showLoginPrompt.value = false;
+  showInlineAuth.value = false;
+  await saveTournament();
+  if (loginPromptReason.value === 'exit') {
+    emit('close-tournament');
   }
 };
 

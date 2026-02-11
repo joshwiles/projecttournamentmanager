@@ -58,23 +58,43 @@ const handleTournamentCreated = (tournament) => {
   handleTournamentSelected(tournament.id);
 };
 
+const previousView = ref(null);
+
 const handleOpenSignIn = () => {
-  showSignIn.value = true;
-  currentView.value = 'signin';
   mobileMenuOpen.value = false;
+  // If a tournament is active, show sign-in as overlay without navigating away
+  if (currentView.value === 'tournament' && selectedTournamentId.value) {
+    previousView.value = 'tournament';
+    showSignIn.value = true;
+  } else {
+    previousView.value = currentView.value;
+    showSignIn.value = true;
+    currentView.value = 'signin';
+  }
 };
 
 const handleCloseSignIn = () => {
   showSignIn.value = false;
-  currentView.value = 'dashboard';
+  if (previousView.value === 'tournament' && selectedTournamentId.value) {
+    // Already on tournament view, just close the overlay
+    previousView.value = null;
+  } else {
+    currentView.value = previousView.value || 'dashboard';
+    previousView.value = null;
+  }
   mobileMenuOpen.value = false;
 };
 
 const handleSignedIn = async (signedInUser) => {
-  // User is already set by useAuth composable
-  await loadUser(); // Refresh user data
+  await loadUser();
   showSignIn.value = false;
-  currentView.value = 'dashboard';
+  if (previousView.value === 'tournament' && selectedTournamentId.value) {
+    // Stay on the tournament view
+    previousView.value = null;
+  } else {
+    currentView.value = 'dashboard';
+    previousView.value = null;
+  }
   mobileMenuOpen.value = false;
 };
 
@@ -154,6 +174,7 @@ onMounted(async () => {
           <!-- Desktop Navigation -->
           <nav class="hidden md:flex gap-2">
             <button
+              v-if="currentUser"
               @click="handleOpenMyTournaments()"
               :class="[
                 'px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-semibold transition-all duration-300 min-h-[44px]',
@@ -184,17 +205,6 @@ onMounted(async () => {
           v-if="mobileMenuOpen"
           class="md:hidden border-t border-gray-700/50 py-3 space-y-2"
         >
-          <button
-            @click="handleOpenMyTournaments()"
-            :class="[
-              'w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left min-h-[44px]',
-              currentView === 'my-tournaments'
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                : 'text-gray-300 active:bg-gray-700/60'
-            ]"
-          >
-            My Tournaments
-          </button>
           <template v-if="currentUser">
             <button
               @click="handleOpenAccount()"
@@ -287,6 +297,16 @@ onMounted(async () => {
         />
       </template>
     </main>
+
+    <!-- Sign In Modal Overlay (when tournament is active) -->
+    <div v-if="showSignIn && currentView === 'tournament'" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div class="w-full max-w-md">
+        <SignIn
+          @close="handleCloseSignIn"
+          @signed-in="handleSignedIn"
+        />
+      </div>
+    </div>
 
     <!-- Footer -->
     <footer class="backdrop-blur-xl bg-gray-800/60 border-t border-gray-700/50 py-4 md:py-6 mt-auto">
