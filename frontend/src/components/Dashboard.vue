@@ -5,7 +5,7 @@
       <div class="bg-gray-800/90 backdrop-blur-xl rounded-2xl md:rounded-3xl shadow-2xl p-6 md:p-8 lg:p-12 border border-gray-700/50">
         <!-- Welcome Message -->
         <div class="text-center mb-6 md:mb-10">
-          <h1 class="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-3 md:mb-4 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <h1 :class="['text-3xl md:text-5xl lg:text-6xl font-extrabold mb-3 md:mb-4 bg-gradient-to-r bg-clip-text text-transparent', tc.titleGradient]">
             Welcome
           </h1>
           <p class="text-base md:text-xl lg:text-2xl text-gray-300 font-medium">
@@ -23,7 +23,7 @@
             <select
               id="tournament-style"
               v-model="tournamentType"
-              class="w-full px-4 md:px-5 py-3 md:py-4 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 appearance-none cursor-pointer active:bg-gray-700/70 hover:bg-gray-700/70 text-base min-h-[44px]"
+              :class="['w-full px-4 md:px-5 py-3 md:py-4 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 appearance-none cursor-pointer active:bg-gray-700/70 hover:bg-gray-700/70 text-base min-h-[44px]', tc.focusRing]"
             >
               <option value="swiss_uscf" class="bg-gray-800">Swiss (USCF)</option>
               <option value="swiss_fide_dutch" class="bg-gray-800">Swiss (FIDE Dutch)</option>
@@ -34,9 +34,9 @@
           </div>
 
           <!-- Info for Round Robin types -->
-          <div v-if="tournamentType === 'round_robin' || tournamentType === 'double_round_robin'" class="bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-indigo-700/50 rounded-xl p-4">
+          <div v-if="tournamentType === 'round_robin' || tournamentType === 'double_round_robin'" :class="['bg-gradient-to-r border rounded-xl p-4', tc.infoBg, tc.infoBorder]">
             <p class="text-sm text-gray-300">
-              <span class="font-semibold text-indigo-400">
+              <span :class="['font-semibold', tc.infoAccent]">
                 {{ tournamentType === 'round_robin' ? 'Round Robin' : 'Double Round Robin' }}:
               </span>
               <span class="text-gray-400">
@@ -50,7 +50,7 @@
           <!-- Start Tournament Button -->
           <button
             @click="handleStartTournament"
-            class="w-full group relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 md:py-3 px-8 rounded-xl active:from-indigo-500 active:to-purple-500 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 font-bold text-base md:text-lg shadow-lg shadow-indigo-500/30 active:shadow-xl active:shadow-indigo-500/50 hover:shadow-xl hover:shadow-indigo-500/50 active:scale-[0.98] hover:scale-105 transform min-h-[44px]"
+            :class="['w-full group relative bg-gradient-to-r text-white py-4 md:py-3 px-8 rounded-xl transition-all duration-300 font-bold text-base md:text-lg shadow-lg active:shadow-xl hover:shadow-xl active:scale-[0.98] hover:scale-105 transform min-h-[44px]', tc.buttonGradient, tc.buttonHover, tc.buttonActive, tc.shadowLg, tc.shadowHoverActive]"
           >
             <span class="flex items-center justify-center gap-3">
               <svg class="w-5 h-5 md:w-6 md:h-6 group-active:translate-x-1 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,8 +67,10 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useTheme } from '../composables/useTheme.js';
 
 const emit = defineEmits(['start-tournament']);
+const { tc } = useTheme();
 
 const tournamentType = ref('swiss_uscf');
 

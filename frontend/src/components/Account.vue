@@ -1,10 +1,12 @@
 <script setup>
 import { ref } from 'vue';
 import { useAuth } from '../composables/useAuth.js';
+import { useTheme } from '../composables/useTheme.js';
 
 const emit = defineEmits(['back']);
 
 const { user, updateProfile, updatePassword } = useAuth();
+const { tc } = useTheme();
 
 // Profile form
 const profileName = ref(user.value?.name || '');
@@ -86,7 +88,7 @@ const handleChangePassword = async () => {
       Back to Dashboard
     </button>
 
-    <h2 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-8">Account</h2>
+    <h2 :class="['text-2xl md:text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-8', tc.headingGradient]">Account</h2>
 
     <!-- Profile Section -->
     <div class="bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-700/50 mb-6">
@@ -100,7 +102,7 @@ const handleChangePassword = async () => {
             v-model="profileName"
             type="text"
             required
-            class="w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
+            :class="['w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]', tc.focusRing]"
             placeholder="Your name"
           />
         </div>
@@ -112,7 +114,7 @@ const handleChangePassword = async () => {
             v-model="profileEmail"
             type="email"
             required
-            class="w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
+            :class="['w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]', tc.focusRing]"
             placeholder="Your email"
           />
         </div>
@@ -130,7 +132,7 @@ const handleChangePassword = async () => {
         <button
           type="submit"
           :disabled="profileLoading"
-          class="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/20 transition-all duration-300 min-h-[44px] disabled:opacity-50"
+          :class="['w-full py-3 px-6 bg-gradient-to-r text-white font-semibold rounded-xl shadow-lg transition-all duration-300 min-h-[44px] disabled:opacity-50', tc.buttonGradient, tc.buttonHover, tc.shadow]"
         >
           {{ profileLoading ? 'Saving...' : 'Save Changes' }}
         </button>
@@ -149,7 +151,7 @@ const handleChangePassword = async () => {
             v-model="currentPassword"
             type="password"
             required
-            class="w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
+            :class="['w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]', tc.focusRing]"
             placeholder="Enter current password"
           />
         </div>
@@ -162,7 +164,7 @@ const handleChangePassword = async () => {
             type="password"
             required
             minlength="8"
-            class="w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
+            :class="['w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]', tc.focusRing]"
             placeholder="Enter new password (min 8 characters)"
           />
         </div>
@@ -175,7 +177,7 @@ const handleChangePassword = async () => {
             type="password"
             required
             minlength="8"
-            class="w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
+            :class="['w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]', tc.focusRing]"
             placeholder="Confirm new password"
           />
         </div>
@@ -193,7 +195,7 @@ const handleChangePassword = async () => {
         <button
           type="submit"
           :disabled="passwordLoading"
-          class="w-full py-3 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg shadow-indigo-500/20 transition-all duration-300 min-h-[44px] disabled:opacity-50"
+          :class="['w-full py-3 px-6 bg-gradient-to-r text-white font-semibold rounded-xl shadow-lg transition-all duration-300 min-h-[44px] disabled:opacity-50', tc.buttonGradient, tc.buttonHover, tc.shadow]"
         >
           {{ passwordLoading ? 'Changing...' : 'Change Password' }}
         </button>

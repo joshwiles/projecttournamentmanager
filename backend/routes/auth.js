@@ -5,6 +5,32 @@ const { requireAuth } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimiter');
 
 /**
+ * Parse preferences JSON safely
+ */
+function parsePreferences(user) {
+  if (!user || !user.preferences) return {};
+  if (typeof user.preferences === 'object') return user.preferences;
+  try {
+    return JSON.parse(user.preferences);
+  } catch {
+    return {};
+  }
+}
+
+/**
+ * Build user response object with parsed preferences
+ */
+function userResponse(user) {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    preferences: parsePreferences(user),
+    created_at: user.created_at,
+  };
+}
+
+/**
  * Validate email format
  */
 function validateEmail(email) {
@@ -84,12 +110,7 @@ router.post('/signup', authLimiter, async (req, res) => {
 
       res.status(201).json({
         success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          created_at: user.created_at
-        },
+        user: userResponse(user),
         message: 'Account created successfully'
       });
     });
@@ -165,12 +186,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
       res.json({
         success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          created_at: user.created_at
-        },
+        user: userResponse(user),
         message: 'Signed in successfully'
       });
     });
@@ -224,12 +240,7 @@ router.get('/me', requireAuth, async (req, res) => {
 
     res.json({
       success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        created_at: user.created_at
-      }
+      user: userResponse(user),
     });
   } catch (error) {
     console.error('Get me error:', error);
@@ -264,12 +275,7 @@ router.put('/profile', requireAuth, async (req, res) => {
 
     res.json({
       success: true,
-      user: {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        name: updatedUser.name,
-        created_at: updatedUser.created_at
-      }
+      user: userResponse(updatedUser),
     });
   } catch (error) {
     console.error('Update profile error:', error);
@@ -315,6 +321,34 @@ router.put('/password', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Update password error:', error);
     res.status(500).json({ success: false, error: 'Failed to update password' });
+  }
+});
+
+/**
+ * PUT /api/auth/preferences
+ * Update user preferences (theme, etc.)
+ */
+router.put('/preferences', requireAuth, async (req, res) => {
+  try {
+    const { theme } = req.body;
+
+    if (!theme) {
+      return res.status(400).json({ success: false, error: 'No preferences provided' });
+    }
+
+    // Build preferences object from allowed keys
+    const preferences = {};
+    if (theme) preferences.theme = String(theme);
+
+    const updatedUser = await User.updatePreferences(req.session.userId, preferences);
+
+    res.json({
+      success: true,
+      user: userResponse(updatedUser),
+    });
+  } catch (error) {
+    console.error('Update preferences error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update preferences' });
   }
 });
 

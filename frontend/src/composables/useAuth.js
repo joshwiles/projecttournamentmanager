@@ -228,6 +228,32 @@ export function useAuth() {
     }
   };
 
+  /**
+   * Update user preferences (theme, etc.)
+   */
+  const updatePreferences = async (prefs) => {
+    try {
+      const url = `${API_BASE}/auth/preferences`;
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(prefs),
+      }).catch((fetchError) => {
+        throw handleNetworkError(fetchError, url);
+      });
+
+      const data = await safeJsonParse(response);
+
+      if (response.ok && data.success && data.user) {
+        user.value = data.user;
+      }
+    } catch (err) {
+      // Fire-and-forget — don't surface preference save errors
+      console.error('Error saving preferences:', err);
+    }
+  };
+
   return {
     user,
     loading,
@@ -240,5 +266,6 @@ export function useAuth() {
     logout,
     updateProfile,
     updatePassword,
+    updatePreferences,
   };
 }

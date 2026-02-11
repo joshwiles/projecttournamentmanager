@@ -50,7 +50,7 @@
               <button
                 @click="saveTournament()"
                 :disabled="saving"
-                class="w-full sm:w-auto px-4 py-2 rounded-md min-h-[44px] font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                :class="['w-full sm:w-auto px-4 py-2 rounded-md min-h-[44px] font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors', tc.buttonSolid]"
               >
                 {{ saving ? 'Saving...' : (savedId || tournament?._savedId ? 'Update Save' : 'Save Tournament') }}
               </button>
@@ -124,7 +124,7 @@
         <div class="flex flex-col gap-2">
           <button
             @click="showInlineAuth = true"
-            class="w-full px-4 py-3 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 min-h-[44px] transition-colors"
+            :class="['w-full px-4 py-3 rounded-lg font-medium text-white min-h-[44px] transition-colors', tc.buttonSolid]"
           >
             Sign In / Sign Up
           </button>
@@ -156,8 +156,10 @@ import SignIn from './SignIn.vue';
 import { API_BASE } from '../config/api.js';
 import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 import { useAuth } from '../composables/useAuth.js';
+import { useTheme } from '../composables/useTheme.js';
 
 const { isAuthenticated } = useAuth();
+const { tc } = useTheme();
 
 const props = defineProps({
   tournamentId: {

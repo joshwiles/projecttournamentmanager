@@ -9,7 +9,7 @@
             :class="[
               'flex-1 py-2 px-4 rounded-lg font-semibold transition-all duration-300',
               !isSignUp
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                ? `bg-gradient-to-r ${tc.buttonGradient} text-white shadow-md`
                 : 'text-gray-300 hover:text-white'
             ]"
           >
@@ -20,7 +20,7 @@
             :class="[
               'flex-1 py-2 px-4 rounded-lg font-semibold transition-all duration-300',
               isSignUp
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                ? `bg-gradient-to-r ${tc.buttonGradient} text-white shadow-md`
                 : 'text-gray-300 hover:text-white'
             ]"
           >
@@ -30,7 +30,7 @@
 
         <!-- Header -->
         <div class="text-center mb-6 md:mb-8">
-          <h2 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-2">
+          <h2 :class="['text-2xl md:text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', tc.headingGradient]">
             {{ isSignUp ? 'Create Account' : 'Welcome Back' }}
           </h2>
           <p class="text-gray-400 text-sm md:text-base">
@@ -50,7 +50,7 @@
               v-model="email"
               type="email"
               required
-              class="w-full px-4 md:px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
+              :class="['w-full px-4 md:px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]', tc.focusRing]"
               placeholder="Enter your email"
             />
           </div>
@@ -66,7 +66,7 @@
               type="password"
               required
               :minlength="isSignUp ? 8 : undefined"
-              class="w-full px-4 md:px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
+              :class="['w-full px-4 md:px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]', tc.focusRing]"
               placeholder="Enter your password"
             />
           </div>
@@ -81,7 +81,7 @@
               v-model="name"
               type="text"
               required
-              class="w-full px-4 md:px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]"
+              :class="['w-full px-4 md:px-5 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 placeholder-gray-400 text-base min-h-[44px]', tc.focusRing]"
               placeholder="Enter your name"
             />
           </div>
@@ -100,7 +100,7 @@
           <button
             type="submit"
             :disabled="loading"
-            class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-8 rounded-xl active:from-indigo-500 active:to-purple-500 hover:from-indigo-500 hover:to-purple-500 transition-all duration-300 font-bold text-base md:text-lg shadow-md shadow-indigo-500/10 active:shadow-lg active:shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+            :class="['w-full bg-gradient-to-r text-white py-4 px-8 rounded-xl transition-all duration-300 font-bold text-base md:text-lg shadow-md active:shadow-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]', tc.buttonGradient, tc.buttonHover, tc.buttonActive, tc.shadowSm]"
           >
             <span v-if="loading" class="flex items-center justify-center gap-2">
               <span class="inline-block animate-spin rounded-full h-5 w-5 border-3 border-white border-t-transparent"></span>
@@ -127,10 +127,12 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useAuth } from '../composables/useAuth.js';
+import { useTheme } from '../composables/useTheme.js';
 
 const emit = defineEmits(['close', 'signed-in']);
 
 const { signup, login, loading, error: authError } = useAuth();
+const { tc } = useTheme();
 
 const isSignUp = ref(false);
 const email = ref('');

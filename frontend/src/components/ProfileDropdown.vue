@@ -1,10 +1,12 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useAuth } from '../composables/useAuth.js';
+import { useTheme } from '../composables/useTheme.js';
 
 const emit = defineEmits(['navigate', 'sign-out']);
 
 const { user } = useAuth();
+const { tc } = useTheme();
 const open = ref(false);
 const dropdownRef = ref(null);
 const buttonRef = ref(null);
@@ -51,7 +53,7 @@ onUnmounted(() => {
     <button
       ref="buttonRef"
       @click="toggle"
-      class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm flex items-center justify-center hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 min-h-[44px] min-w-[44px]"
+      :class="['w-10 h-10 rounded-full bg-gradient-to-br text-white font-bold text-sm flex items-center justify-center hover:shadow-lg transition-all duration-300 min-h-[44px] min-w-[44px]', tc.avatarGradient, tc.avatarShadow]"
     >
       {{ initials }}
     </button>

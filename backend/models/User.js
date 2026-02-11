@@ -34,7 +34,7 @@ class User {
         const userId = result.lastInsertRowid;
         
         // Fetch the created user
-        const selectStmt = db.raw.prepare('SELECT id, email, name, created_at, updated_at FROM users WHERE id = ?');
+        const selectStmt = db.raw.prepare('SELECT id, email, name, preferences, created_at, updated_at FROM users WHERE id = ?');
         const user = selectStmt.get(userId);
         return user;
       } else {
@@ -42,7 +42,7 @@ class User {
         const query = `
           INSERT INTO users (email, password_hash, name)
           VALUES ($1, $2, $3)
-          RETURNING id, email, name, created_at, updated_at
+          RETURNING id, email, name, preferences, created_at, updated_at
         `;
         const result = await db.query(query, [normalizedEmail, passwordHash, name.trim()]);
         return result.rows[0];
@@ -79,10 +79,10 @@ class User {
     const dbType = getDbType();
     
     if (dbType === 'sqlite' && db.raw) {
-      const stmt = db.raw.prepare('SELECT id, email, name, created_at, updated_at FROM users WHERE id = ?');
+      const stmt = db.raw.prepare('SELECT id, email, name, preferences, created_at, updated_at FROM users WHERE id = ?');
       return stmt.get(id) || null;
     } else {
-      const query = 'SELECT id, email, name, created_at, updated_at FROM users WHERE id = $1';
+      const query = 'SELECT id, email, name, preferences, created_at, updated_at FROM users WHERE id = $1';
       const result = await db.query(query, [id]);
       return result.rows[0] || null;
     }
@@ -121,7 +121,7 @@ class User {
         return User.findById(id);
       } else {
         const setClauses = updates.map((col, i) => `${col} = $${i + 1}`).join(', ');
-        const query = `UPDATE users SET ${setClauses}, updated_at = NOW() WHERE id = $${updates.length + 1} RETURNING id, email, name, created_at, updated_at`;
+        const query = `UPDATE users SET ${setClauses}, updated_at = NOW() WHERE id = $${updates.length + 1} RETURNING id, email, name, preferences, created_at, updated_at`;
         const result = await db.query(query, [...values, id]);
         return result.rows[0] || null;
       }
@@ -158,6 +158,26 @@ class User {
       return stmt.get(id) || null;
     } else {
       const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+      return result.rows[0] || null;
+    }
+  }
+
+  /**
+   * Update user preferences
+   */
+  static async updatePreferences(id, preferences) {
+    const dbType = getDbType();
+    const json = JSON.stringify(preferences);
+
+    if (dbType === 'sqlite' && db.raw) {
+      const stmt = db.raw.prepare('UPDATE users SET preferences = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
+      stmt.run(json, id);
+      return User.findById(id);
+    } else {
+      const result = await db.query(
+        'UPDATE users SET preferences = $1, updated_at = NOW() WHERE id = $2 RETURNING id, email, name, preferences, created_at, updated_at',
+        [json, id]
+      );
       return result.rows[0] || null;
     }
   }

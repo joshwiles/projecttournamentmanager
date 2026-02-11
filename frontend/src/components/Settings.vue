@@ -1,7 +1,10 @@
 <script setup>
 import { ref, watch } from 'vue';
+import { useTheme } from '../composables/useTheme.js';
 
 const emit = defineEmits(['back']);
+
+const { themes, currentThemeId, tc, setTheme } = useTheme();
 
 const STORAGE_KEY = 'chess-tm-settings';
 
@@ -52,7 +55,7 @@ watch([defaultTournamentType, defaultRounds, boardNumberStart], saveSettings);
       Back to Dashboard
     </button>
 
-    <h2 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent mb-8">Settings</h2>
+    <h2 :class="['text-2xl md:text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-8', tc.headingGradient]">Settings</h2>
 
     <!-- Tournament Defaults -->
     <div class="bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-700/50 mb-6">
@@ -64,7 +67,7 @@ watch([defaultTournamentType, defaultRounds, boardNumberStart], saveSettings);
           <select
             id="default-type"
             v-model="defaultTournamentType"
-            class="w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 text-base min-h-[44px]"
+            :class="['w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 text-base min-h-[44px]', tc.focusRing]"
           >
             <option v-for="t in tournamentTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
           </select>
@@ -78,7 +81,7 @@ watch([defaultTournamentType, defaultRounds, boardNumberStart], saveSettings);
             type="number"
             min="1"
             max="20"
-            class="w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 text-base min-h-[44px]"
+            :class="['w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 text-base min-h-[44px]', tc.focusRing]"
           />
         </div>
       </div>
@@ -97,9 +100,33 @@ watch([defaultTournamentType, defaultRounds, boardNumberStart], saveSettings);
             type="number"
             min="0"
             max="100"
-            class="w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-300 bg-gray-700/50 text-gray-100 text-base min-h-[44px]"
+            :class="['w-full px-4 py-3 border-2 border-gray-600 rounded-xl focus:ring-2 transition-all duration-300 bg-gray-700/50 text-gray-100 text-base min-h-[44px]', tc.focusRing]"
           />
           <p class="text-sm text-gray-400 mt-1">Starting number for board numbering in pairing displays</p>
+        </div>
+
+        <!-- Color Theme -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-300 mb-3">Color Theme</label>
+          <div class="grid grid-cols-5 gap-3">
+            <button
+              v-for="theme in themes"
+              :key="theme.id"
+              @click="setTheme(theme.id)"
+              :class="[
+                'flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 min-h-[44px]',
+                currentThemeId === theme.id
+                  ? 'border-white bg-gray-700/60 shadow-lg'
+                  : 'border-gray-600/50 hover:border-gray-500 hover:bg-gray-700/30'
+              ]"
+            >
+              <div
+                class="w-8 h-8 rounded-full bg-gradient-to-br"
+                :style="{ backgroundImage: `linear-gradient(to bottom right, ${theme.preview.from}, ${theme.preview.to})` }"
+              ></div>
+              <span class="text-xs font-medium text-gray-300">{{ theme.label }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

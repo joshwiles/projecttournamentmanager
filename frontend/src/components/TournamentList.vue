@@ -1,7 +1,7 @@
 <template>
   <div class="tournament-list">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 md:mb-6">
-      <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+      <h1 :class="['text-2xl md:text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent', tc.titleGradient]">
       </h1>
       <button
         @click="showCreator = true"
@@ -129,8 +129,10 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import TournamentCreator from './TournamentCreator.vue';
 import { API_BASE } from '../config/api.js';
 import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
+import { useTheme } from '../composables/useTheme.js';
 
 const emit = defineEmits(['tournament-selected']);
+const { tc } = useTheme();
 
 const tournaments = ref([]);
 const loading = ref(true);

@@ -10,8 +10,10 @@ import ProfileDropdown from './components/ProfileDropdown.vue';
 import Account from './components/Account.vue';
 import Settings from './components/Settings.vue';
 import { useAuth } from './composables/useAuth.js';
+import { useTheme } from './composables/useTheme.js';
 
 const { user, initialCheckDone, loadUser, logout: authLogout, isAuthenticated } = useAuth();
+const { tc, syncFromUser } = useTheme();
 
 const currentView = ref('dashboard'); // 'dashboard', 'list', 'tournament', 'signin', 'my-tournaments', 'account', 'settings'
 const selectedTournamentId = ref(null);
@@ -87,6 +89,7 @@ const handleCloseSignIn = () => {
 
 const handleSignedIn = async (signedInUser) => {
   await loadUser();
+  syncFromUser(user.value);
   showSignIn.value = false;
   if (previousView.value === 'tournament' && selectedTournamentId.value) {
     // Stay on the tournament view
@@ -134,14 +137,15 @@ const handleLoadSavedTournament = ({ tournamentId, savedId }) => {
   currentView.value = 'tournament';
 };
 
-// Load user on app start
+// Load user on app start and apply their saved theme
 onMounted(async () => {
   await loadUser();
+  syncFromUser(user.value);
 });
 </script>
 
 <template>
-  <div id="app" class="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-950">
+  <div id="app" :class="['flex flex-col min-h-screen bg-gradient-to-br', tc.bodyGradient]">
     <!-- Header -->
     <header class="backdrop-blur-xl bg-gray-800/80 border-b border-gray-700/50 shadow-lg sticky top-0 z-50">
       <div class="container mx-auto px-4">
@@ -150,7 +154,7 @@ onMounted(async () => {
           <div class="flex-1 min-w-0">
             <h1 
               @click="handleNavigateToDashboard"
-              class="text-lg md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent cursor-pointer active:opacity-80 transition-opacity truncate"
+              :class="['text-lg md:text-2xl lg:text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent cursor-pointer active:opacity-80 transition-opacity truncate', tc.titleGradient]"
             >
               ♟️ Chess Tournament Manager
             </h1>
@@ -179,7 +183,7 @@ onMounted(async () => {
               :class="[
                 'px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-semibold transition-all duration-300 min-h-[44px]',
                 currentView === 'my-tournaments'
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/20'
+                  ? `bg-gradient-to-r ${tc.navActive} text-white shadow-md ${tc.navActiveShadow}`
                   : 'text-gray-300 hover:bg-gray-700/60 hover:shadow-md active:bg-gray-700/60'
               ]"
             >
@@ -211,7 +215,7 @@ onMounted(async () => {
               :class="[
                 'w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left min-h-[44px]',
                 currentView === 'account'
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                  ? `bg-gradient-to-r ${tc.navActive} text-white shadow-md`
                   : 'text-gray-300 active:bg-gray-700/60'
               ]"
             >
@@ -222,7 +226,7 @@ onMounted(async () => {
               :class="[
                 'w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left min-h-[44px]',
                 currentView === 'settings'
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                  ? `bg-gradient-to-r ${tc.navActive} text-white shadow-md`
                   : 'text-gray-300 active:bg-gray-700/60'
               ]"
             >
@@ -251,7 +255,7 @@ onMounted(async () => {
       <!-- Show loading spinner while initial auth check runs -->
       <div v-if="!initialCheckDone" class="flex items-center justify-center min-h-[60vh]">
         <div class="text-center">
-          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"></div>
+          <div :class="['inline-block animate-spin rounded-full h-12 w-12 border-4 border-t-transparent mb-4', tc.spinner]"></div>
           <p class="text-gray-400">Loading...</p>
         </div>
       </div>

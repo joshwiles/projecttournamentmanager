@@ -69,7 +69,7 @@
       <button
         @click="startTournament"
         :disabled="loading || players.length < 2"
-        class="w-full bg-purple-600 text-white py-3 md:py-2 px-4 rounded-md active:bg-purple-700 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold min-h-[44px] text-base"
+        :class="['w-full text-white py-3 md:py-2 px-4 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-semibold min-h-[44px] text-base', tc.buttonSolidAlt]"
       >
         Start Tournament
       </button>
@@ -81,6 +81,9 @@
 import { ref, watch, nextTick } from 'vue';
 import { API_BASE } from '../config/api.js';
 import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
+import { useTheme } from '../composables/useTheme.js';
+
+const { tc } = useTheme();
 
 const props = defineProps({
   tournamentId: {

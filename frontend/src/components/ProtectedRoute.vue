@@ -1,7 +1,7 @@
 <template>
   <div v-if="authLoading" class="flex items-center justify-center min-h-[60vh]">
     <div class="text-center">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent mb-4"></div>
+      <div :class="['inline-block animate-spin rounded-full h-12 w-12 border-4 border-t-transparent mb-4', tc.spinner]"></div>
       <p class="text-gray-400">Loading...</p>
     </div>
   </div>
@@ -12,7 +12,7 @@
         <p class="text-gray-400 mb-6">Please sign in to access this page.</p>
         <button
           @click="$emit('redirect-to-login')"
-          class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-semibold min-h-[44px]"
+          :class="['text-white px-6 py-3 rounded-lg transition-colors font-semibold min-h-[44px]', tc.buttonSolid]"
         >
           Sign In
         </button>
@@ -25,8 +25,10 @@
 <script setup>
 import { computed } from 'vue';
 import { useAuth } from '../composables/useAuth.js';
+import { useTheme } from '../composables/useTheme.js';
 
 const { user, loading: authLoading } = useAuth();
+const { tc } = useTheme();
 
 const isAuthenticated = computed(() => !!user.value);
 

@@ -9,7 +9,7 @@
     </div>
 
     <div v-if="loading" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent mb-4"></div>
+      <div :class="['inline-block animate-spin rounded-full h-10 w-10 border-4 border-t-transparent mb-4', tc.spinner]"></div>
       <p class="text-gray-400">Loading tournaments...</p>
     </div>
 
@@ -26,7 +26,7 @@
       <div
         v-for="t in tournaments"
         :key="t.id"
-        class="bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-xl p-5 flex flex-col gap-3 hover:border-indigo-500/50 transition-colors"
+        :class="['bg-gray-800/80 backdrop-blur-sm border border-gray-700/50 rounded-xl p-5 flex flex-col gap-3 transition-colors', tc.hoverBorder]"
       >
         <div class="flex-1">
           <h3 class="text-lg font-semibold text-white mb-2 break-words">{{ t.name }}</h3>
@@ -55,7 +55,7 @@
           <button
             @click="loadTournament(t.id)"
             :disabled="loadingId === t.id"
-            class="flex-1 px-4 py-2 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 min-h-[44px] transition-colors"
+            :class="['flex-1 px-4 py-2 rounded-lg font-medium text-white disabled:opacity-50 min-h-[44px] transition-colors', tc.buttonSolid]"
           >
             {{ loadingId === t.id ? 'Loading...' : (isAuthenticated ? 'Load' : 'Open') }}
           </button>
@@ -100,8 +100,10 @@ import { ref, onMounted } from 'vue';
 import { API_BASE } from '../config/api.js';
 import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 import { useAuth } from '../composables/useAuth.js';
+import { useTheme } from '../composables/useTheme.js';
 
 const { isAuthenticated } = useAuth();
+const { tc } = useTheme();
 
 const emit = defineEmits(['load-tournament']);
 

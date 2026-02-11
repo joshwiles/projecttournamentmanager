@@ -133,12 +133,26 @@ async function initializeDatabase() {
       db.raw.exec(createIndex);
       db.raw.exec(createSavedTournamentsTable);
       db.raw.exec(createSavedTournamentsIndex);
+      // Add preferences column if it doesn't exist
+      try {
+        db.raw.exec('ALTER TABLE users ADD COLUMN preferences TEXT DEFAULT NULL');
+      } catch (e) {
+        // Column already exists - ignore
+      }
       console.log('✅ Database schema initialized');
     } else {
       await db.query(createUsersTable);
       await db.query(createIndex);
       await db.query(createSavedTournamentsTable);
       await db.query(createSavedTournamentsIndex);
+      // Add preferences column if it doesn't exist
+      try {
+        await db.query('ALTER TABLE users ADD COLUMN preferences JSONB DEFAULT NULL');
+      } catch (e) {
+        if (!e.message.includes('already exists') && !e.message.includes('duplicate')) {
+          console.warn('Preferences column migration warning:', e.message);
+        }
+      }
       if (createSessionsTable) {
         try {
           await db.query(createSessionsTable);
