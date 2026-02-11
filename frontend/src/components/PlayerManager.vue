@@ -6,6 +6,7 @@
       <form @submit.prevent="addPlayer" class="space-y-3">
         <div class="flex flex-col sm:flex-row gap-3">
           <input
+            ref="nameInput"
             v-model="newPlayerName"
             type="text"
             required
@@ -77,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { API_BASE } from '../config/api.js';
 import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 
@@ -98,6 +99,7 @@ const props = defineProps({
 
 const emit = defineEmits(['player-added', 'player-removed', 'tournament-started']);
 
+const nameInput = ref(null);
 const newPlayerName = ref('');
 const newPlayerRating = ref('');
 const loading = ref(false);
@@ -134,6 +136,8 @@ const addPlayer = async () => {
     emit('player-added', data.player);
     newPlayerName.value = '';
     newPlayerRating.value = '';
+    await nextTick();
+    nameInput.value?.focus();
   } catch (err) {
     error.value = err.message;
   } finally {

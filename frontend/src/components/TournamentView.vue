@@ -58,6 +58,9 @@
                 {{ saveMessage }}
               </span>
             </div>
+            <p v-else class="text-sm text-gray-400 italic">
+              Log in to save tournament and access across devices
+            </p>
             <button
               @click="$emit('close-tournament')"
               class="w-full sm:w-auto text-gray-500 active:text-gray-700 hover:text-gray-700 px-4 py-2 rounded-md active:bg-gray-100 min-h-[44px] text-left sm:text-center font-medium"
@@ -197,7 +200,12 @@ const loadTournament = async (showLoading = true) => {
 
     tournament.value = data.tournament;
     standings.value = data.tournament.standings || [];
-    
+
+    // Auto-save on first load if logged in and not already saved
+    if (isAuthenticated.value && !savedId.value && !tournament.value._savedId) {
+      saveTournament();
+    }
+
     // Restore scroll position after DOM update
     await nextTick();
     requestAnimationFrame(() => {
@@ -212,7 +220,7 @@ const loadTournament = async (showLoading = true) => {
   }
 };
 
-const handleRoundCompleted = (data) => {
+const handleRoundCompleted = async (data) => {
   if (data.tournament) {
     tournament.value.status = data.tournament.status;
     tournament.value.currentRound = data.tournament.currentRound;
@@ -220,7 +228,10 @@ const handleRoundCompleted = (data) => {
   if (data.standings) {
     standings.value = data.standings;
   }
-  loadTournament();
+  await loadTournament();
+  if (isAuthenticated.value && (savedId.value || tournament.value?._savedId)) {
+    saveTournament();
+  }
 };
 
 const saveTournament = async () => {

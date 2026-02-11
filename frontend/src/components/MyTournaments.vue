@@ -1,12 +1,16 @@
 <template>
   <div class="my-tournaments">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-      <h2 class="text-2xl md:text-3xl font-bold text-white">My Saved Tournaments</h2>
+      <h2 class="text-2xl md:text-3xl font-bold text-white">{{ isAuthenticated ? 'My Saved Tournaments' : 'My Tournaments' }}</h2>
+    </div>
+
+    <div v-if="!isAuthenticated" class="mb-6 px-4 py-3 rounded-lg bg-amber-900/30 border border-amber-700/50 text-amber-200 text-sm">
+      These tournaments are saved to your current session only. Sign in or sign up to save them permanently and access them across devices.
     </div>
 
     <div v-if="loading" class="text-center py-12">
       <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-indigo-500 border-t-transparent mb-4"></div>
-      <p class="text-gray-400">Loading saved tournaments...</p>
+      <p class="text-gray-400">Loading tournaments...</p>
     </div>
 
     <div v-else-if="error" class="bg-red-900/40 border border-red-700 text-red-300 px-4 py-3 rounded-lg">
@@ -14,8 +18,8 @@
     </div>
 
     <div v-else-if="tournaments.length === 0" class="text-center py-12">
-      <p class="text-gray-400 text-lg mb-2">No saved tournaments yet.</p>
-      <p class="text-gray-500 text-sm">Open a tournament and click "Save Tournament" to save it here.</p>
+      <p class="text-gray-400 text-lg mb-2">No tournaments yet.</p>
+      <p class="text-gray-500 text-sm">{{ isAuthenticated ? 'Open a tournament and click "Save Tournament" to save it here.' : 'Create a tournament from the dashboard to get started.' }}</p>
     </div>
 
     <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -53,9 +57,10 @@
             :disabled="loadingId === t.id"
             class="flex-1 px-4 py-2 rounded-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 min-h-[44px] transition-colors"
           >
-            {{ loadingId === t.id ? 'Loading...' : 'Load' }}
+            {{ loadingId === t.id ? 'Loading...' : (isAuthenticated ? 'Load' : 'Open') }}
           </button>
           <button
+            v-if="isAuthenticated"
             @click="confirmDelete(t)"
             class="px-4 py-2 rounded-lg font-medium text-red-400 hover:bg-red-900/40 active:bg-red-900/60 min-h-[44px] transition-colors"
           >
@@ -94,6 +99,9 @@
 import { ref, onMounted } from 'vue';
 import { API_BASE } from '../config/api.js';
 import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
+import { useAuth } from '../composables/useAuth.js';
+
+const { isAuthenticated } = useAuth();
 
 const emit = defineEmits(['load-tournament']);
 
@@ -133,13 +141,33 @@ const fetchTournaments = async () => {
   loading.value = true;
   error.value = '';
   try {
-    const url = `${API_BASE}/saved-tournaments`;
-    const response = await fetch(url, { credentials: 'include' }).catch((e) => {
-      throw handleNetworkError(e, url);
-    });
-    const data = await safeJsonParse(response);
-    if (!response.ok) throw new Error(data.error || 'Failed to load saved tournaments');
-    tournaments.value = data.savedTournaments;
+    if (isAuthenticated.value) {
+      const url = `${API_BASE}/saved-tournaments`;
+      const response = await fetch(url, { credentials: 'include' }).catch((e) => {
+        throw handleNetworkError(e, url);
+      });
+      const data = await safeJsonParse(response);
+      if (!response.ok) throw new Error(data.error || 'Failed to load saved tournaments');
+      tournaments.value = data.savedTournaments;
+    } else {
+      const url = `${API_BASE}/tournaments`;
+      const response = await fetch(url, { credentials: 'include' }).catch((e) => {
+        throw handleNetworkError(e, url);
+      });
+      const data = await safeJsonParse(response);
+      if (!response.ok) throw new Error(data.error || 'Failed to load tournaments');
+      // Normalize in-memory tournament fields to match saved tournament format
+      tournaments.value = (data.tournaments || []).map((t) => ({
+        id: t.id,
+        name: t.name,
+        tournament_type: t.tournamentType,
+        status: t.status,
+        player_count: t.playerCount,
+        current_round: t.currentRound,
+        number_of_rounds: t.numberOfRounds,
+        updated_at: t.createdAt,
+      }));
+    }
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -147,11 +175,17 @@ const fetchTournaments = async () => {
   }
 };
 
-const loadTournament = async (savedId) => {
-  loadingId.value = savedId;
+const loadTournament = async (id) => {
+  loadingId.value = id;
   try {
-    // Fetch full tournament data
-    const detailUrl = `${API_BASE}/saved-tournaments/${savedId}`;
+    if (!isAuthenticated.value) {
+      // In-memory tournament — already loaded on the server, just navigate
+      emit('load-tournament', { tournamentId: id, savedId: null });
+      return;
+    }
+
+    // Fetch full saved tournament data
+    const detailUrl = `${API_BASE}/saved-tournaments/${id}`;
     const detailRes = await fetch(detailUrl, { credentials: 'include' }).catch((e) => {
       throw handleNetworkError(e, detailUrl);
     });
@@ -166,7 +200,7 @@ const loadTournament = async (savedId) => {
       credentials: 'include',
       body: JSON.stringify({
         tournamentData: detailData.savedTournament.tournament_data,
-        savedId: savedId,
+        savedId: id,
       }),
     }).catch((e) => {
       throw handleNetworkError(e, loadUrl);
@@ -174,7 +208,7 @@ const loadTournament = async (savedId) => {
     const loadData = await safeJsonParse(loadRes);
     if (!loadRes.ok) throw new Error(loadData.error || 'Failed to load tournament into memory');
 
-    emit('load-tournament', { tournamentId: loadData.tournament.id, savedId });
+    emit('load-tournament', { tournamentId: loadData.tournament.id, savedId: id });
   } catch (err) {
     error.value = err.message;
   } finally {

@@ -154,15 +154,15 @@ onMounted(async () => {
           <!-- Desktop Navigation -->
           <nav class="hidden md:flex gap-2">
             <button
-              @click="currentView = 'list'; selectedTournamentId = null; showCreator = false; mobileMenuOpen = false"
+              @click="handleOpenMyTournaments()"
               :class="[
                 'px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-semibold transition-all duration-300 min-h-[44px]',
-                currentView === 'list'
+                currentView === 'my-tournaments'
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/20'
                   : 'text-gray-300 hover:bg-gray-700/60 hover:shadow-md active:bg-gray-700/60'
               ]"
             >
-              Tournaments
+              My Tournaments
             </button>
             <button
               v-if="!currentUser"
@@ -185,15 +185,15 @@ onMounted(async () => {
           class="md:hidden border-t border-gray-700/50 py-3 space-y-2"
         >
           <button
-            @click="currentView = 'list'; selectedTournamentId = null; showCreator = false; mobileMenuOpen = false"
+            @click="handleOpenMyTournaments()"
             :class="[
               'w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left min-h-[44px]',
-              currentView === 'list'
+              currentView === 'my-tournaments'
                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
                 : 'text-gray-300 active:bg-gray-700/60'
             ]"
           >
-            Tournaments
+            My Tournaments
           </button>
           <template v-if="currentUser">
             <button
@@ -206,17 +206,6 @@ onMounted(async () => {
               ]"
             >
               Account
-            </button>
-            <button
-              @click="handleOpenMyTournaments()"
-              :class="[
-                'w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left min-h-[44px]',
-                currentView === 'my-tournaments'
-                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                  : 'text-gray-300 active:bg-gray-700/60'
-              ]"
-            >
-              My Tournaments
             </button>
             <button
               @click="handleOpenSettings()"
