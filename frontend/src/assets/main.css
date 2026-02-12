@@ -23,6 +23,7 @@ code {
 /* Mobile-first: Prevent horizontal scrolling */
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* Remove iOS tap dark flash */
 }
 
 html, body {
