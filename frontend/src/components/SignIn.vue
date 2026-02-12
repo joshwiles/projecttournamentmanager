@@ -205,8 +205,8 @@ const handleSubmit = async () => {
 <style scoped>
 @keyframes fade-in {
   from {
-    opacity: 0;
-    transform: translateY(20px);
+    opacity: 0.7;
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -215,7 +215,7 @@ const handleSubmit = async () => {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.6s ease-out;
+  animation: fade-in 0.15s ease-out;
 }
 </style>
 
