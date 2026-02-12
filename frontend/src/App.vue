@@ -211,6 +211,17 @@ onMounted(async () => {
         >
           <template v-if="currentUser">
             <button
+              @click="handleOpenMyTournaments()"
+              :class="[
+                'w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left min-h-[44px]',
+                currentView === 'my-tournaments'
+                  ? `bg-gradient-to-r ${tc.navActive} text-white shadow-md`
+                  : 'text-gray-300 active:bg-gray-700/60'
+              ]"
+            >
+              My Tournaments
+            </button>
+            <button
               @click="handleOpenAccount()"
               :class="[
                 'w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 text-left min-h-[44px]',
