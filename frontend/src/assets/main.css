@@ -28,6 +28,7 @@ code {
 html, body {
   overflow-x: hidden;
   width: 100%;
+  background-color: #111827; /* gray-900 - prevents white flash on iOS overscroll */
 }
 
 /* Touch-friendly interactions */
