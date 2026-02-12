@@ -95,7 +95,7 @@
         :round="currentRoundData"
         :current-round="tournament.currentRound"
         @round-completed="handleRoundCompleted"
-        @result-updated="loadTournament"
+        @result-updated="loadTournament(false)"
         class="mb-4 md:mb-6"
       />
 
@@ -250,7 +250,7 @@ const loadTournament = async (showLoading = true) => {
 };
 
 const handlePlayerChange = async () => {
-  await loadTournament();
+  await loadTournament(false);
   if (isAuthenticated.value && (savedId.value || tournament.value?._savedId)) {
     saveTournament();
   }
@@ -264,7 +264,7 @@ const handleRoundCompleted = async (data) => {
   if (data.standings) {
     standings.value = data.standings;
   }
-  await loadTournament();
+  await loadTournament(false);
   if (isAuthenticated.value && (savedId.value || tournament.value?._savedId)) {
     saveTournament();
   } else if (!isAuthenticated.value && tournament.value?.status === 'completed') {
