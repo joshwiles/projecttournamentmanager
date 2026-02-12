@@ -1,8 +1,11 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const User = require('../models/User');
+const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimiter');
+const { sendPasswordResetEmail } = require('../utils/email');
 
 /**
  * Parse preferences JSON safely
@@ -349,6 +352,128 @@ router.put('/preferences', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Update preferences error:', error);
     res.status(500).json({ success: false, error: 'Failed to update preferences' });
+  }
+});
+
+/**
+ * POST /api/auth/forgot-password
+ * Request a password reset email
+ */
+router.post('/forgot-password', authLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required' });
+    }
+
+    // Always return success to prevent email enumeration
+    const successResponse = {
+      success: true,
+      message: 'If an account exists with that email, we have sent a password reset link.'
+    };
+
+    const user = await User.findByEmail(email);
+    if (!user) {
+      return res.json(successResponse);
+    }
+
+    // Generate token
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Store token hash
+    if (db.type === 'sqlite') {
+      await db.query(
+        'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES (?, ?, ?)',
+        [user.id, tokenHash, expiresAt.toISOString()]
+      );
+    } else {
+      await db.query(
+        'INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)',
+        [user.id, tokenHash, expiresAt.toISOString()]
+      );
+    }
+
+    // Send email
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}?reset-token=${token}`;
+
+    try {
+      await sendPasswordResetEmail(email, resetUrl);
+    } catch (emailError) {
+      console.error('Failed to send password reset email:', emailError);
+    }
+
+    res.json(successResponse);
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ success: false, error: 'Failed to process request' });
+  }
+});
+
+/**
+ * POST /api/auth/reset-password
+ * Reset password using a valid token
+ */
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ success: false, error: 'Token and password are required' });
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      return res.status(400).json({ success: false, error: passwordValidation.error });
+    }
+
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    // Find valid token
+    let result;
+    if (db.type === 'sqlite') {
+      result = await db.query(
+        'SELECT * FROM password_reset_tokens WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?',
+        [tokenHash, new Date().toISOString()]
+      );
+    } else {
+      result = await db.query(
+        'SELECT * FROM password_reset_tokens WHERE token_hash = $1 AND used_at IS NULL AND expires_at > NOW()',
+        [tokenHash]
+      );
+    }
+
+    if (!result.rows || result.rows.length === 0) {
+      return res.status(400).json({ success: false, error: 'Invalid or expired reset token' });
+    }
+
+    const resetToken = result.rows[0];
+
+    // Update password
+    const bcrypt = require('bcryptjs');
+    const newHash = await bcrypt.hash(password, 12);
+    await User.updatePassword(resetToken.user_id, newHash);
+
+    // Mark token as used
+    if (db.type === 'sqlite') {
+      await db.query(
+        'UPDATE password_reset_tokens SET used_at = ? WHERE id = ?',
+        [new Date().toISOString(), resetToken.id]
+      );
+    } else {
+      await db.query(
+        'UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1',
+        [resetToken.id]
+      );
+    }
+
+    res.json({ success: true, message: 'Password has been reset successfully' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ success: false, error: 'Failed to reset password' });
   }
 });
 

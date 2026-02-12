@@ -65,6 +65,8 @@ async function initializeDatabase() {
   let createSessionsTable;
   let createSavedTournamentsTable;
   let createSavedTournamentsIndex;
+  let createPasswordResetTokensTable;
+  let createPasswordResetTokensIndex;
 
   if (db.type === 'postgres') {
     createUsersTable = `
@@ -94,6 +96,16 @@ async function initializeDatabase() {
       )
     `;
     createSavedTournamentsIndex = `CREATE INDEX IF NOT EXISTS idx_saved_tournaments_user_id ON saved_tournaments(user_id)`;
+    createPasswordResetTokensTable = `
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        token_hash TEXT NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        used_at TIMESTAMP DEFAULT NULL
+      )
+    `;
+    createPasswordResetTokensIndex = `CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_hash ON password_reset_tokens(token_hash)`;
 
     // Session table for connect-pg-simple (will be auto-created by connect-pg-simple with createTableIfMissing: true)
     // No need to create manually
@@ -125,6 +137,16 @@ async function initializeDatabase() {
       )
     `;
     createSavedTournamentsIndex = `CREATE INDEX IF NOT EXISTS idx_saved_tournaments_user_id ON saved_tournaments(user_id)`;
+    createPasswordResetTokensTable = `
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        token_hash TEXT NOT NULL,
+        expires_at DATETIME NOT NULL,
+        used_at DATETIME DEFAULT NULL
+      )
+    `;
+    createPasswordResetTokensIndex = `CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_hash ON password_reset_tokens(token_hash)`;
   }
 
   try {
@@ -133,6 +155,8 @@ async function initializeDatabase() {
       db.raw.exec(createIndex);
       db.raw.exec(createSavedTournamentsTable);
       db.raw.exec(createSavedTournamentsIndex);
+      db.raw.exec(createPasswordResetTokensTable);
+      db.raw.exec(createPasswordResetTokensIndex);
       // Add preferences column if it doesn't exist
       try {
         db.raw.exec('ALTER TABLE users ADD COLUMN preferences TEXT DEFAULT NULL');
@@ -145,6 +169,8 @@ async function initializeDatabase() {
       await db.query(createIndex);
       await db.query(createSavedTournamentsTable);
       await db.query(createSavedTournamentsIndex);
+      await db.query(createPasswordResetTokensTable);
+      await db.query(createPasswordResetTokensIndex);
       // Add preferences column if it doesn't exist
       try {
         await db.query('ALTER TABLE users ADD COLUMN preferences JSONB DEFAULT NULL');

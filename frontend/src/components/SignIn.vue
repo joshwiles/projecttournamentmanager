@@ -71,6 +71,17 @@
             />
           </div>
 
+          <!-- Forgot Password (only for sign in) -->
+          <div v-if="!isSignUp" class="text-right -mt-2">
+            <button
+              type="button"
+              @click="$emit('forgot-password')"
+              class="text-sm font-medium text-indigo-400 hover:text-indigo-300 active:text-indigo-300 transition-colors"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           <!-- Name (only for sign up) -->
           <div v-if="isSignUp">
             <label for="name" class="block text-sm md:text-base font-semibold text-gray-300 mb-2">
@@ -129,7 +140,7 @@ import { ref, watch } from 'vue';
 import { useAuth } from '../composables/useAuth.js';
 import { useTheme } from '../composables/useTheme.js';
 
-const emit = defineEmits(['close', 'signed-in']);
+const emit = defineEmits(['close', 'signed-in', 'forgot-password']);
 
 const { signup, login, loading, error: authError } = useAuth();
 const { tc } = useTheme();

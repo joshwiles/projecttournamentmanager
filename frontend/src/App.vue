@@ -5,6 +5,8 @@ import TournamentList from './components/TournamentList.vue';
 import TournamentView from './components/TournamentView.vue';
 import TournamentCreator from './components/TournamentCreator.vue';
 import SignIn from './components/SignIn.vue';
+import ForgotPassword from './components/ForgotPassword.vue';
+import ResetPassword from './components/ResetPassword.vue';
 import MyTournaments from './components/MyTournaments.vue';
 import ProfileDropdown from './components/ProfileDropdown.vue';
 import Account from './components/Account.vue';
@@ -15,10 +17,11 @@ import { useTheme } from './composables/useTheme.js';
 const { user, initialCheckDone, loadUser, logout: authLogout, isAuthenticated } = useAuth();
 const { tc, syncFromUser } = useTheme();
 
-const currentView = ref('dashboard'); // 'dashboard', 'list', 'tournament', 'signin', 'my-tournaments', 'account', 'settings'
+const currentView = ref('dashboard'); // 'dashboard', 'list', 'tournament', 'signin', 'forgot-password', 'reset-password', 'my-tournaments', 'account', 'settings'
 const selectedTournamentId = ref(null);
 const selectedSavedId = ref(null);
 const showSignIn = ref(false);
+const resetToken = ref(null);
 
 // Computed property for current user
 const currentUser = computed(() => user.value);
@@ -131,14 +134,37 @@ const handleOpenMyTournaments = () => {
   mobileMenuOpen.value = false;
 };
 
+const handleForgotPassword = () => {
+  showSignIn.value = false;
+  currentView.value = 'forgot-password';
+};
+
+const handleForgotPasswordBack = () => {
+  handleOpenSignIn();
+};
+
+const handleResetPasswordGoToSignIn = () => {
+  resetToken.value = null;
+  // Clean the URL
+  window.history.replaceState({}, '', window.location.pathname);
+  handleOpenSignIn();
+};
+
 const handleLoadSavedTournament = ({ tournamentId, savedId }) => {
   selectedTournamentId.value = tournamentId;
   selectedSavedId.value = savedId;
   currentView.value = 'tournament';
 };
 
-// Load user on app start and apply their saved theme
+// Load user on app start, check for reset token in URL, apply theme
 onMounted(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('reset-token');
+  if (token) {
+    resetToken.value = token;
+    currentView.value = 'reset-password';
+  }
+
   await loadUser();
   syncFromUser(user.value);
 });
@@ -277,6 +303,16 @@ onMounted(async () => {
           v-if="currentView === 'signin'"
           @close="handleCloseSignIn"
           @signed-in="handleSignedIn"
+          @forgot-password="handleForgotPassword"
+        />
+        <ForgotPassword
+          v-else-if="currentView === 'forgot-password'"
+          @back="handleForgotPasswordBack"
+        />
+        <ResetPassword
+          v-else-if="currentView === 'reset-password' && resetToken"
+          :token="resetToken"
+          @go-to-signin="handleResetPasswordGoToSignIn"
         />
         <Dashboard
           v-else-if="currentView === 'dashboard' && !showCreator"
@@ -319,6 +355,7 @@ onMounted(async () => {
         <SignIn
           @close="handleCloseSignIn"
           @signed-in="handleSignedIn"
+          @forgot-password="handleForgotPassword"
         />
       </div>
     </div>
