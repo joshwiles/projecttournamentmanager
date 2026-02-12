@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, nextTick, onMounted } from 'vue';
 import { API_BASE } from '../config/api.js';
 import { safeJsonParse, handleNetworkError } from '../utils/apiHelpers.js';
 import { useTheme } from '../composables/useTheme.js';
@@ -108,8 +108,21 @@ const newPlayerRating = ref('');
 const loading = ref(false);
 const error = ref('');
 
+onMounted(() => {
+  nameInput.value?.focus();
+});
+
 const addPlayer = async () => {
   if (!newPlayerName.value.trim()) return;
+
+  const playerName = newPlayerName.value.trim();
+  const playerRating = newPlayerRating.value ? parseInt(newPlayerRating.value) : null;
+
+  // Clear and refocus immediately so iOS doesn't lose keyboard
+  newPlayerName.value = '';
+  newPlayerRating.value = '';
+  await nextTick();
+  nameInput.value?.focus();
 
   loading.value = true;
   error.value = '';
@@ -123,8 +136,8 @@ const addPlayer = async () => {
       },
       credentials: 'include',
       body: JSON.stringify({
-        name: newPlayerName.value.trim(),
-        rating: newPlayerRating.value ? parseInt(newPlayerRating.value) : null,
+        name: playerName,
+        rating: playerRating,
       }),
     }).catch((fetchError) => {
       throw handleNetworkError(fetchError, url);
@@ -137,10 +150,6 @@ const addPlayer = async () => {
     }
 
     emit('player-added', data.player);
-    newPlayerName.value = '';
-    newPlayerRating.value = '';
-    await nextTick();
-    nameInput.value?.focus();
   } catch (err) {
     error.value = err.message;
   } finally {
